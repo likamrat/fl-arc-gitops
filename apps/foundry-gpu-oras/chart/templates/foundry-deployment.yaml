@@ -10,6 +10,8 @@ metadata:
     foundry.deployment/type: {{ include "foundry-local.foundry.type" . }}
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "foundry-local.foundry.selectorLabels" . | nindent 6 }}
