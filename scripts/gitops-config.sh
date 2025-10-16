@@ -38,15 +38,15 @@ az k8s-configuration flux create \
   --scope cluster \
   --url ${REPO_URL} \
   --branch ${BRANCH} \
-  --sync-interval 30s \
+  --sync-interval 10s \
   --timeout 600s \
-  --kustomization name=infrastructure path=./infrastructure prune=true sync-interval=30s timeout=600s retry-interval=30s \
-  --kustomization name=apps path=./apps/foundry-gpu-oras prune=true depends_on=infrastructure sync-interval=30s timeout=600s retry-interval=30s
+  --kustomization name=infrastructure path=./infrastructure prune=true sync-interval=10s timeout=600s retry-interval=10s \
+  --kustomization name=apps path=./apps/foundry-gpu-oras prune=true depends_on=infrastructure sync-interval=10s timeout=600s retry-interval=10s
 
 echo -e "${GREEN}✓ Flux configuration created${NC}"
 echo ""
 
-echo -e "${BLUE}Step 3: Creating ImageRepository (10s scan interval)...${NC}"
+echo -e "${BLUE}Step 3: Creating ImageRepository (5s scan interval)...${NC}"
 kubectl apply -f - <<EOF
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -56,7 +56,7 @@ metadata:
   namespace: flux-system
 spec:
   image: foundryoci.azurecr.io/foundry-local-olive-models
-  interval: 10s
+  interval: 5s
   provider: azure
 EOF
 

@@ -29,13 +29,11 @@ spec:
       deploymentType: "gpu-oras"
       
       # BYO models configuration
-      byo:
-        enabled: true
-        registry: "foundryoci.azurecr.io"
-        repository: "foundry-local-olive-models"
-        tag: "v0.3.0" # {"$imagepolicy": "flux-system:foundry-local-olive-models:tag"}
-      
-      # Image configuration (uses global.imageRegistry)
+    byo:
+      enabled: true
+      registry: foundryoci.azurecr.io
+      repository: foundry-local-olive-models
+      tag: v0.1.0 # {"$imagepolicy": "flux-system:foundry-local-olive-models:tag"}      # Image configuration (uses global.imageRegistry)
       images:
         gpu-oras:
           repository: foundry-local-gpu-oras
