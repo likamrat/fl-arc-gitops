@@ -38,10 +38,10 @@ az k8s-configuration flux create \
   --scope cluster \
   --url ${REPO_URL} \
   --branch ${BRANCH} \
-  --sync-interval 10s \
+  --sync-interval 3s \
   --timeout 600s \
-  --kustomization name=infrastructure path=./infrastructure prune=true sync-interval=10s timeout=600s retry-interval=10s \
-  --kustomization name=apps path=./apps/foundry-gpu-oras prune=true depends_on=infrastructure sync-interval=10s timeout=600s retry-interval=10s
+  --kustomization name=infrastructure path=./infrastructure prune=true sync-interval=3s timeout=600s retry-interval=3s \
+  --kustomization name=apps path=./apps/foundry-gpu-oras prune=true depends_on=infrastructure sync-interval=3s timeout=600s retry-interval=3s
 
 echo -e "${GREEN}✓ Flux configuration created${NC}"
 echo ""
