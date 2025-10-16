@@ -46,7 +46,15 @@ az k8s-configuration flux create \
 echo -e "${GREEN}✓ Flux configuration created${NC}"
 echo ""
 
-echo -e "${BLUE}Step 3: Creating ImageRepository (5s scan interval)...${NC}"
+echo -e "${BLUE}Step 3: Patching Kustomization intervals to 3s...${NC}"
+sleep 5  # Wait for Kustomizations to be created
+kubectl patch kustomization foundry-gitops-infrastructure -n ${NAMESPACE} --type=json -p='[{"op": "replace", "path": "/spec/interval", "value": "3s"}, {"op": "replace", "path": "/spec/retryInterval", "value": "3s"}]' 2>/dev/null || echo "Will retry..."
+kubectl patch kustomization foundry-gitops-apps -n ${NAMESPACE} --type=json -p='[{"op": "replace", "path": "/spec/interval", "value": "3s"}, {"op": "replace", "path": "/spec/retryInterval", "value": "3s"}]' 2>/dev/null || echo "Will retry..."
+
+echo -e "${GREEN}✓ Kustomization intervals updated${NC}"
+echo ""
+
+echo -e "${BLUE}Step 4: Creating ImageRepository (5s scan interval)...${NC}"
 kubectl apply -f - <<EOF
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -57,13 +65,12 @@ metadata:
 spec:
   image: foundryoci.azurecr.io/foundry-local-olive-models
   interval: 5s
-  provider: azure
 EOF
 
 echo -e "${GREEN}✓ ImageRepository configured${NC}"
 echo ""
 
-echo -e "${BLUE}Step 4: Creating ImagePolicy...${NC}"
+echo -e "${BLUE}Step 5: Creating ImagePolicy...${NC}"
 kubectl apply -f - <<EOF
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -85,7 +92,7 @@ EOF
 echo -e "${GREEN}✓ ImagePolicy created${NC}"
 echo ""
 
-echo -e "${BLUE}Step 5: Verifying configuration...${NC}"
+echo -e "${BLUE}Step 6: Verifying configuration...${NC}"
 az k8s-configuration flux show \
   --resource-group ${RESOURCE_GROUP} \
   --cluster-name ${CLUSTER_NAME} \
@@ -94,7 +101,7 @@ az k8s-configuration flux show \
   --output table
 
 echo ""
-echo -e "${BLUE}Step 6: Checking resources...${NC}"
+echo -e "${BLUE}Step 7: Checking resources...${NC}"
 kubectl get imagerepository -n flux-system foundry-local-olive-models 2>/dev/null || echo "ImageRepository will be ready shortly..."
 kubectl get imagepolicy -n flux-system foundry-local-olive-models 2>/dev/null || echo "ImagePolicy will be ready shortly..."
 echo ""
