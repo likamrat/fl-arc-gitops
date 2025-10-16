@@ -1,9 +1,0 @@
-{{- if .Values.namespaceOverride }}
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ .Values.namespaceOverride }}
-  labels:
-    name: {{ .Values.namespaceOverride }}
-    {{- include "foundry-local.labels" . | nindent 4 }}
-{{- end }}
