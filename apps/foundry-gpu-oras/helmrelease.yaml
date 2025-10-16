@@ -19,7 +19,37 @@ spec:
       name: foundry-values
       optional: true
   values:
-    # Values will be merged from values.yaml in this directory
+    # Global registry override for foundryoci
+    global:
+      imageRegistry: "foundryoci.azurecr.io"
+      imagePullSecrets:
+        - name: acr-secret
+    
+    # GPU-ORAS deployment configuration
+    foundry:
+      enabled: true
+      deploymentType: "gpu-oras"
+      
+      # BYO models configuration
+      byo:
+        enabled: true
+        registry: "foundryoci.azurecr.io"
+        repository: "foundry-local-olive-models"
+        tag: "v0.1.0" # {"$imagepolicy": "foundry-system:foundry-local-olive-models:tag"}
+      
+      # Image configuration (uses global.imageRegistry)
+      images:
+        gpu-oras:
+          repository: foundry-local-gpu-oras
+          tag: "latest"
+      
+      # GPU resource requirements
+      resources:
+        requests:
+          nvidia.com/gpu: 1
+        limits:
+          nvidia.com/gpu: 1
+  
   install:
     remediation:
       retries: 3
