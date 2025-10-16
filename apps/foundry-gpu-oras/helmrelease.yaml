@@ -22,8 +22,6 @@ spec:
     # Global registry override for foundryoci
     global:
       imageRegistry: "foundryoci.azurecr.io"
-      imagePullSecrets:
-        - name: acr-secret
     
     # GPU-ORAS deployment configuration
     foundry:
