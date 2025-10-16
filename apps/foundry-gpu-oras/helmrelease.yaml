@@ -33,7 +33,7 @@ spec:
         enabled: true
         registry: "foundryoci.azurecr.io"
         repository: "foundry-local-olive-models"
-        tag: "v0.1.0" # {"$imagepolicy": "foundry-system:foundry-local-olive-models:tag"}
+        tag: "v0.1.0" # {"$imagepolicy": "flux-system:foundry-local-olive-models:tag"}
       
       # Image configuration (uses global.imageRegistry)
       images:
