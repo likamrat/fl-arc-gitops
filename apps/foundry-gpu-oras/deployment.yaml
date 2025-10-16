@@ -1,0 +1,168 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: foundry-system
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: foundry-model-cache
+  namespace: foundry-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: foundry-home
+  namespace: foundry-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foundry-gpu-oras
+  namespace: foundry-system
+  labels:
+    app: foundry
+    variant: gpu-oras
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: foundry
+      variant: gpu-oras
+  template:
+    metadata:
+      labels:
+        app: foundry
+        variant: gpu-oras
+    spec:
+      securityContext:
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+      imagePullSecrets:
+        - name: acr-credentials
+      containers:
+        - name: foundry
+          image: jumpstartdev.azurecr.io/foundry-local-gpu-oras:latest # {"$imagepolicy": "flux-system:foundry-container-image"}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          env:
+            - name: FOUNDRY_SERVER_URL
+              value: "http://localhost:5000"
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+            - name: ASPNETCORE_URLS
+              value: "http://127.0.0.1:5001"
+            - name: DOTNET_RUNNING_IN_CONTAINER
+              value: "true"
+            - name: FOUNDRY_VARIANT
+              value: "gpu-oras"
+            - name: FOUNDRY_COMPUTE_TYPE
+              value: "gpu"
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0"
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "all"
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: "compute,utility"
+            - name: FOUNDRY_AUTO_DEPLOY_BYO_MODELS
+              value: "true"
+            - name: FOUNDRY_BYO_REGISTRY
+              value: "foundryoci.azurecr.io"
+            - name: FOUNDRY_BYO_REPO
+              value: "foundry-local-olive-models"
+            - name: FOUNDRY_BYO_TAG
+              value: "v0.1.0" # {"$imagepolicy": "flux-system:foundry-local-olive-models:tag"}
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: "2"
+              nvidia.com/gpu: "1"
+            limits:
+              memory: "32Gi"
+              cpu: "8"
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: model-cache
+              mountPath: /home/foundry/.foundry/cache/models
+            - name: foundry-home
+              mountPath: /home/foundry/.foundry/cache
+          livenessProbe:
+            httpGet:
+              path: /v1/models
+              port: 5000
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /v1/models
+              port: 5000
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 30
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /v1/models
+              port: 5000
+            initialDelaySeconds: 180
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 40
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: true
+            runAsUser: 0
+            capabilities:
+              add:
+                - SYS_ADMIN
+      volumes:
+        - name: model-cache
+          persistentVolumeClaim:
+            claimName: foundry-model-cache
+        - name: foundry-home
+          persistentVolumeClaim:
+            claimName: foundry-home
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: foundry-service
+  namespace: foundry-system
+  labels:
+    app: foundry
+spec:
+  type: NodePort
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30500
+      protocol: TCP
+      name: http
+  selector:
+    app: foundry
+    variant: gpu-oras
