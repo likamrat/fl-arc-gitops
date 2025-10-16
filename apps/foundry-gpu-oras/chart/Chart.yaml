@@ -1,0 +1,20 @@
+apiVersion: v2
+name: foundry-local
+description: A Helm chart for Foundry Local AI inference service with automatic CPU/GPU deployment based on model selection and ORAS BYO model support
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - ai
+  - inference
+  - foundry
+  - openai
+  - chat
+home: https://github.com/microsoft/foundry-local
+sources:
+  - https://github.com/microsoft/foundry-local
+maintainers:
+  - name: Lior Kamrat
+    email: foundry-team@microsoft.com
+annotations:
+  category: Machine Learning

@@ -1,0 +1,1 @@
+az connectedk8s connect --name ROG-AI --resource-group Foundry-Arc

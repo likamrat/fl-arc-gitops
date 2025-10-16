@@ -1,0 +1,49 @@
+# Example values for CPU-ORAS deployment with BYO models
+
+# Configure for CPU-ORAS deployment with BYO models
+foundry:
+  # Explicitly set deployment type to CPU-ORAS
+  deploymentType: "cpu-oras"
+  
+  # Enable BYO model deployment
+  byo:
+    enabled: true
+    # Configure your ORAS registry
+    registry: "jumpstartdev.azurecr.io"
+    repository: "foundry-local-olive-models"
+    tag: "latest"
+    # Optional authentication (use secrets in production)
+    auth:
+      enabled: false
+      username: ""
+      password: ""
+  
+  # Model field is not used for BYO deployments (actual model comes from ORAS)
+  # This is just a placeholder - the real llama-3.2 model comes from ORAS registry  
+  model: "llama-3.2"
+  
+  # CPU-ORAS specific environment variables
+  cpuOrasEnvVars:
+    - name: ORAS_DEBUG
+      value: "false"
+  
+  # Increase startup probe timeout for model download
+  healthChecks:
+    startupProbe:
+      initialDelaySeconds: 120  # Allow more time for BYO model download
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 30      # Allow up to 15 minutes for large models
+
+# Enable Open WebUI (will automatically detect available models)
+openWebUI:
+  enabled: true
+  config:
+    defaultModels: ""  # Will be automatically populated
+
+# Optional: Enable autoscaling for CPU-ORAS workloads
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80

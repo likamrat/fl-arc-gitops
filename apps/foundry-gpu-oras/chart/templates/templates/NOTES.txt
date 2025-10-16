@@ -1,0 +1,113 @@
+🚀 Foundry Local has been deployed successfully!
+
+📊 Configuration Summary:
+  - Model: {{ .Values.foundry.model }}
+  - Type: {{ include "foundry-local.foundry.type" . }} (auto-detected)
+  {{- if .Values.openWebUI.enabled }}
+  - Open WebUI: Enabled
+  {{- else }}
+  - Open WebUI: Disabled
+  {{- end }}
+  {{- if .Values.autoscaling.enabled }}
+  - Autoscaling: Enabled ({{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }} replicas)
+  {{- end }}
+
+🔗 Access Information:
+
+1. Foundry Local API:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  {{- if eq .service "foundry-local" }}
+   External URL: http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.foundry.service.type }}
+   Get the application URL by running these commands:
+     export NODE_PORT=$(kubectl get --namespace {{ include "foundry-local.namespace" . }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "foundry-local.foundry.serviceName" . }})
+     export NODE_IP=$(kubectl get nodes --namespace {{ include "foundry-local.namespace" . }} -o jsonpath="{.items[0].status.addresses[0].address}")
+     echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.foundry.service.type }}
+   NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+         You can watch the status of by running 'kubectl get --namespace {{ include "foundry-local.namespace" . }} svc -w {{ include "foundry-local.foundry.serviceName" . }}'
+     export SERVICE_IP=$(kubectl get svc --namespace {{ include "foundry-local.namespace" . }} {{ include "foundry-local.foundry.serviceName" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+     echo http://$SERVICE_IP:{{ .Values.foundry.service.port }}
+{{- else if contains "ClusterIP" .Values.foundry.service.type }}
+   API URL: http://{{ include "foundry-local.foundry.serviceName" . }}.{{ include "foundry-local.namespace" . }}.svc.cluster.local:{{ .Values.foundry.service.port }}
+   
+   To access from outside the cluster, create a port-forward:
+     kubectl --namespace {{ include "foundry-local.namespace" . }} port-forward svc/{{ include "foundry-local.foundry.serviceName" . }} 8080:{{ .Values.foundry.service.port }}
+   Then access: http://localhost:8080
+{{- end }}
+
+{{- if .Values.openWebUI.enabled }}
+
+2. Open WebUI:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  {{- if eq .service "open-webui" }}
+   External URL: http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.openWebUI.service.type }}
+   Get the WebUI URL by running these commands:
+     export WEBUI_NODE_PORT=$(kubectl get --namespace {{ include "foundry-local.namespace" . }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "foundry-local.openwebui.serviceName" . }})
+     export NODE_IP=$(kubectl get nodes --namespace {{ include "foundry-local.namespace" . }} -o jsonpath="{.items[0].status.addresses[0].address}")
+     echo http://$NODE_IP:$WEBUI_NODE_PORT
+{{- else if contains "LoadBalancer" .Values.openWebUI.service.type }}
+   NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+         You can watch the status of by running 'kubectl get --namespace {{ include "foundry-local.namespace" . }} svc -w {{ include "foundry-local.openwebui.serviceName" . }}'
+     export WEBUI_SERVICE_IP=$(kubectl get svc --namespace {{ include "foundry-local.namespace" . }} {{ include "foundry-local.openwebui.serviceName" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+     echo http://$WEBUI_SERVICE_IP:{{ .Values.openWebUI.service.port }}
+{{- else if contains "ClusterIP" .Values.openWebUI.service.type }}
+   WebUI URL: http://{{ include "foundry-local.openwebui.serviceName" . }}.{{ include "foundry-local.namespace" . }}.svc.cluster.local:{{ .Values.openWebUI.service.port }}
+   
+   To access from outside the cluster, create a port-forward:
+     kubectl --namespace {{ include "foundry-local.namespace" . }} port-forward svc/{{ include "foundry-local.openwebui.serviceName" . }} 3000:{{ .Values.openWebUI.service.port }}
+   Then access: http://localhost:3000
+{{- end }}
+{{- end }}
+
+🔧 Useful Commands:
+
+   View pod status:
+     kubectl get pods --namespace {{ include "foundry-local.namespace" . }} -l "app.kubernetes.io/instance={{ .Release.Name }}"
+
+   View logs:
+     kubectl logs --namespace {{ include "foundry-local.namespace" . }} -l "app.kubernetes.io/instance={{ .Release.Name }},app.kubernetes.io/component=foundry-local"
+     {{- if .Values.openWebUI.enabled }}
+     kubectl logs --namespace {{ include "foundry-local.namespace" . }} -l "app.kubernetes.io/instance={{ .Release.Name }},app.kubernetes.io/component=open-webui"
+     {{- end }}
+
+   Scale the deployment:
+     kubectl scale --namespace {{ include "foundry-local.namespace" . }} deployment {{ include "foundry-local.foundry.deploymentName" . }} --replicas=<desired-count>
+
+   Update configuration:
+     helm upgrade {{ .Release.Name }} ./helm/foundry-local --namespace {{ include "foundry-local.namespace" . }} --set model.name=<new-model>
+
+📚 Documentation:
+   Chart values: helm/foundry-local/values.yaml
+   Model configuration: Check the foundry-config ConfigMap for available models
+
+{{- if .Values.persistence.enabled }}
+🗄️  Persistent Storage:
+   Model cache is persisted to improve startup times on pod restarts.
+   PVC: {{ include "foundry-local.fullname" . }}-models
+{{- end }}
+
+{{- if .Values.monitoring.enabled }}
+📈 Monitoring:
+   ServiceMonitor has been created for Prometheus scraping.
+   Metrics endpoint: /metrics
+{{- end }}
+
+{{- if .Values.networkPolicy.enabled }}
+🔒 Network Security:
+   Network policies are enforcing traffic isolation.
+   Only allowed connections are permitted between components.
+{{- end }}
+
+Happy chatting with your local AI! 🤖

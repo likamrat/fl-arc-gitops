@@ -1,0 +1,444 @@
+# Default values for foundry-local
+
+# Global settings
+global:
+  # Image registry settings
+  imageRegistry: "jumpstartdev.azurecr.io"
+  # Pull policy for all images
+  imagePullPolicy: IfNotPresent
+  # Image pull secrets (if needed for private registry)
+  imagePullSecrets: []
+  #  - name: regcred
+
+# Namespace configuration
+namespaceOverride: ""
+
+# Foundry Local configuration
+foundry:
+  # Enable/disable foundry-local deployment
+  enabled: true
+  
+  # Deployment type override (optional)
+  # Set this to explicitly choose deployment type for BYO scenarios:
+  # - "cpu" for CPU-only deployment
+  # - "gpu" for GPU deployment  
+  # - "cpu-oras" for CPU with BYO models
+  # - "gpu-oras" for GPU with BYO models
+  # If not set, type is auto-detected from model name and BYO settings
+  deploymentType: ""
+  
+  # Model to deploy - this automatically determines CPU vs GPU deployment
+  # The chart will automatically select the right image and resources based on the model name
+  model: "qwen2.5-0.5b-instruct-generic-cpu:3"
+  
+  # BYO (Bring Your Own) models configuration
+  # When enabled, automatically uses cpu-oras deployment type
+  byo:
+    enabled: false
+    # ORAS registry configuration
+    registry: ""       # e.g., "jumpstartdev.azurecr.io"
+    repository: ""     # e.g., "foundry-local-olive-models"
+    tag: "latest"      # Model artifact tag
+    # Optional authentication (use secrets in production)
+    auth:
+      enabled: false
+      username: ""     # Registry username
+      password: ""     # Registry password/token
+  
+  # Image configuration per type (automatically selected based on model)
+  images:
+    cpu:
+      repository: foundry-local-cpu
+      tag: "latest"
+    cpu-oras:
+      repository: foundry-local-cpu-oras
+      tag: "latest"
+    gpu:
+      repository: foundry-local-gpu
+      tag: "latest"
+    gpu-oras:
+      repository: foundry-local-gpu-oras
+      tag: "latest"
+  
+  # Global image settings
+  image:
+    pullPolicy: ""  # Uses global.imagePullPolicy if empty
+  
+  # Model options (examples):
+  # CPU-optimized models:
+  # - "qwen2.5-0.5b-instruct-generic-cpu:3"      # Small Qwen model (default)
+  # - "qwen2.5-1.5b-instruct-generic-cpu:3"      # Larger Qwen model, more capable
+  # - "phi-3-mini-4k-instruct-generic-cpu:2"     # Microsoft Phi-3 Mini (3.8B params)
+  # - "phi-3.5-mini-instruct-generic-cpu:1"      # Microsoft Phi-3.5 Mini (3.8B params)
+  # - "llama3.2:1b"                               # Meta Llama 3.2 1B (very fast)
+  # - "llama3.2:3b"                               # Meta Llama 3.2 3B (balanced)
+  # GPU-optimized models (will auto-select GPU deployment):
+  # - "qwen2.5-1.5b-instruct-cuda-gpu:3"         # GPU-optimized Qwen with CUDA
+  # - "llama3.1:8b"                               # Meta Llama 3.1 8B
+  # - "qwen2.5:7b"                                # Qwen 2.5 7B
+  # - "mistral:7b"                                # Mistral 7B
+  # - "codellama:7b"                              # Code Llama 7B (for coding tasks)
+  
+  # Resource allocation per deployment type
+  resources:
+    cpu:
+      # CPU deployment resources
+      requests:
+        memory: "2Gi"
+        cpu: "500m"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+    
+    cpu-oras:
+      # CPU-ORAS deployment resources (same as CPU)
+      requests:
+        memory: "2Gi"
+        cpu: "500m"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+    
+    gpu:
+      # GPU deployment resources
+      requests:
+        memory: "8Gi"
+        cpu: "2"
+        nvidia.com/gpu: "1"
+      limits:
+        memory: "32Gi"
+        cpu: "8"
+        nvidia.com/gpu: "1"
+    
+    gpu-oras:
+      # GPU-ORAS deployment resources (same as GPU but with ORAS capabilities)
+      requests:
+        memory: "8Gi"
+        cpu: "2"
+        nvidia.com/gpu: "1"
+      limits:
+        memory: "32Gi"
+        cpu: "8"
+        nvidia.com/gpu: "1"
+  
+  # GPU-specific configuration
+  gpu:
+    # Runtime class for GPU support
+    runtimeClassName: "nvidia"
+    # Enable privileged mode for GPU access
+    privileged: true
+    # CUDA environment variables
+    cudaVisibleDevices: "0"
+    # Node selector for GPU nodes
+    nodeSelector:
+      nvidia.com/gpu.present: "true"
+    # Tolerations for GPU nodes
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+  
+  # Service configuration
+  service:
+    type: NodePort
+    port: 5000
+    nodePort: 30500  # Set to null for automatic assignment
+    annotations: {}
+  
+  # Health check configuration
+  healthChecks:
+    # Liveness probe settings
+    livenessProbe:
+      initialDelaySeconds: 120
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 3
+    
+    # Readiness probe settings
+    readinessProbe:
+      initialDelaySeconds: 60
+      periodSeconds: 15
+      timeoutSeconds: 30
+      failureThreshold: 3
+    
+    # Startup probe settings (for initial model download)
+    startupProbe:
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 20  # Allow up to 10 minutes
+  
+  # Security configuration
+  securityContext:
+    # Pod security context
+    podSecurityContext:
+      fsGroup: 1001
+      seccompProfile:
+        type: RuntimeDefault
+    
+    # Container security context for CPU deployments
+    cpu:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+        add:
+        - SETUID
+        - SETGID
+      readOnlyRootFilesystem: false
+      runAsUser: 0  # Required for supervisor to drop privileges properly
+    
+    # Container security context for CPU-ORAS deployments (same as CPU)
+    cpu-oras:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+        add:
+        - SETUID
+        - SETGID
+      readOnlyRootFilesystem: false
+      runAsUser: 0  # Required for supervisor to drop privileges properly
+    
+    # Container security context for GPU deployments (use non-privileged like GPU-ORAS)
+    gpu:
+      privileged: false  # Try non-privileged mode like working GPU-ORAS
+      allowPrivilegeEscalation: false
+      runAsUser: 0  # Still run as root for foundry permissions
+      capabilities:
+        drop:
+        - ALL
+        add:
+        - SETUID
+        - SETGID
+    
+    # Container security context for GPU-ORAS deployments (same as GPU)
+    gpu-oras:
+      privileged: true  # Required for GPU access
+      allowPrivilegeEscalation: true
+      runAsUser: 0  # Required for NVIDIA runtime
+      capabilities:
+        add:
+        - SYS_ADMIN
+  
+  # Volume configuration
+  volumes:
+    # Model cache volume
+    modelCache:
+      size: "20Gi"
+    # Foundry home volume
+    foundryHome:
+      size: "1Gi"
+  
+  # Additional environment variables
+  extraEnvVars: []
+  #  - name: CUSTOM_VAR
+  #    value: "custom_value"
+  
+  # CPU-specific environment variables
+  cpuEnvVars: []
+  #  - name: CPU_SPECIFIC_VAR
+  #    value: "cpu_value"
+  
+  # CPU-ORAS specific environment variables (for BYO model deployment)
+  cpuOrasEnvVars: []
+  #  - name: ORAS_DEBUG
+  #    value: "true"
+  
+  # GPU-specific environment variables
+  gpuEnvVars:
+    - name: CUDA_VISIBLE_DEVICES
+      value: "0"
+    - name: NVIDIA_VISIBLE_DEVICES
+      value: "all"
+    - name: NVIDIA_DRIVER_CAPABILITIES
+      value: "compute,utility"
+  
+  # GPU-ORAS specific environment variables (for BYO model deployment with GPU acceleration)
+  gpuOrasEnvVars:
+    - name: CUDA_VISIBLE_DEVICES
+      value: "0"
+    - name: NVIDIA_VISIBLE_DEVICES
+      value: "all"
+    - name: NVIDIA_DRIVER_CAPABILITIES
+      value: "compute,utility"
+  #  - name: ORAS_DEBUG
+  #    value: "true"
+  
+  # Node selection (used when type is not gpu)
+  nodeSelector: {}
+  
+  # Simple node targeting - specify a node name to run on
+  # This will add kubernetes.io/hostname=<nodename> to nodeSelector
+  # Example: targetNode: "worker-node-1" 
+  targetNode: ""
+  
+  # Global node selector - applies to all deployments regardless of type
+  # These selectors will be merged with type-specific selectors
+  # Example: globalNodeSelector: {"zone": "us-west-1a", "instance-type": "gpu-enabled"}
+  globalNodeSelector: {}
+  
+  # Tolerations (used when type is not gpu)
+  tolerations: []
+  
+  # Affinity rules
+  affinity: {}
+
+# Open WebUI configuration
+openWebUI:
+  # Enable/disable Open WebUI deployment
+  enabled: true
+  
+  # Image configuration
+  image:
+    repository: ghcr.io/open-webui/open-webui
+    tag: "main"
+    pullPolicy: ""  # Uses global.imagePullPolicy if empty
+  
+  # Configuration
+  config:
+    # UI customization
+    webuiName: "Foundry Local AI"
+    webuiUrl: "http://0.0.0.0:8080"
+    webuiSecretKey: "foundry-local-secret-key-change-in-production"
+    
+    # Default model (automatically set to match foundry.model)
+    defaultModels: ""  # Will be automatically set to foundry.model
+    
+    # User management
+    defaultUserRole: "user"
+    enableSignup: true
+    enableLoginForm: true
+    enableCommunitySharing: false
+    
+    # Default admin user (for automatic setup)
+    defaultAdmin:
+      enabled: true
+      email: "admin@foundry.local"
+      password: "foundry123"  # Change this in production!
+      name: "Admin"
+    
+    # Performance settings
+    chunkSize: "1024"
+    chunkOverlap: "100"
+  
+  # Resource allocation
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  
+  # Service configuration
+  service:
+    type: NodePort
+    port: 8080
+    nodePort: 30800  # Set to null for automatic assignment
+    annotations: {}
+  
+  # Volume configuration
+  volumes:
+    # Data persistence
+    dataSize: "2Gi"
+  
+  # Security configuration
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  
+  # Additional environment variables
+  extraEnvVars: []
+  
+  # Node selection
+  nodeSelector: {}
+  
+  # Tolerations
+  tolerations: []
+  
+  # Affinity rules
+  affinity: {}
+
+# Ingress configuration (optional)
+ingress:
+  # Enable ingress
+  enabled: false
+  
+  # Ingress class
+  className: ""
+  
+  # Annotations
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  
+  # Hosts configuration
+  hosts:
+    - host: foundry-local.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: foundry-local
+        - path: /ui
+          pathType: Prefix
+          service: open-webui
+  
+  # TLS configuration
+  tls: []
+  #  - secretName: foundry-local-tls
+  #    hosts:
+  #      - foundry-local.example.com
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
+
+# Network Policies
+networkPolicy:
+  enabled: false
+  # Ingress rules
+  ingress: []
+  # Egress rules
+  egress: []
+
+# Monitoring configuration
+monitoring:
+  enabled: false
+  path: "/metrics"
+  interval: "30s"
+  scrapeTimeout: "10s"
+  labels: {}
+  metricRelabelings: []
+  relabelings: []
+
+# Auto-scaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+  behavior: {}
+
+# Persistence configuration
+persistence:
+  enabled: false
+  storageClass: ""
+  size: "10Gi"
+  accessMode: "ReadWriteOnce"
+  annotations: {}
+
+# Service Account
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# RBAC
+rbac:
+  create: false

@@ -1,0 +1,31 @@
+# Example values for CPU-only deployment
+
+# Configure for CPU deployment (default)
+foundry:
+  # Set deployment type to CPU (this is the default)
+  type: "cpu"
+  
+  # Use CPU-optimized model
+  model:
+    autoDeployModel: "qwen2.5-0.5b-instruct-generic-cpu:3"
+    cacheSize: "20Gi"
+  
+  # CPU-specific configuration will be automatically applied based on type
+
+# Enable Open WebUI
+openWebUI:
+  enabled: true
+  config:
+    defaultModels: "qwen2.5-0.5b-instruct-generic-cpu:3"
+
+# Enable autoscaling for CPU workloads
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5  # Can scale more on CPU nodes
+  targetCPUUtilizationPercentage: 80
+
+# Optional persistence
+persistence:
+  enabled: true
+  size: "20Gi"

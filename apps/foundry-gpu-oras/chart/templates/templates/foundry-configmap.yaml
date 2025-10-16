@@ -1,0 +1,52 @@
+{{- if .Values.foundry.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "foundry-local.fullname" . }}-foundry-config
+  namespace: {{ include "foundry-local.namespace" . }}
+  labels:
+    {{- include "foundry-local.labels" . | nindent 4 }}
+    app.kubernetes.io/component: foundry
+data:
+  # Auto-deploy configuration
+  FOUNDRY_AUTO_DEPLOY_MODEL: {{ .Values.foundry.model | quote }}
+  
+  {{- if or (eq (include "foundry-local.foundry.type" .) "cpu-oras") (eq (include "foundry-local.foundry.type" .) "gpu-oras") }}
+  # BYO Model configuration for ORAS deployment
+  FOUNDRY_AUTO_DEPLOY_BYO_MODELS: {{ .Values.foundry.byo.enabled | quote }}
+  {{- if and .Values.foundry.byo.enabled .Values.foundry.byo.registry }}
+  FOUNDRY_BYO_REGISTRY: {{ .Values.foundry.byo.registry | quote }}
+  {{- end }}
+  {{- if and .Values.foundry.byo.enabled .Values.foundry.byo.repository }}
+  FOUNDRY_BYO_REPO: {{ .Values.foundry.byo.repository | quote }}
+  {{- end }}
+  {{- if and .Values.foundry.byo.enabled .Values.foundry.byo.tag }}
+  FOUNDRY_BYO_TAG: {{ .Values.foundry.byo.tag | quote }}
+  {{- end }}
+  {{- if and .Values.foundry.byo.auth.enabled .Values.foundry.byo.auth.username }}
+  FOUNDRY_BYO_USERNAME: {{ .Values.foundry.byo.auth.username | quote }}
+  {{- end }}
+  {{- if and .Values.foundry.byo.auth.enabled .Values.foundry.byo.auth.password }}
+  FOUNDRY_BYO_PASSWORD: {{ .Values.foundry.byo.auth.password | quote }}
+  {{- end }}
+  {{- else }}
+  # BYO Model disabled for non-ORAS deployments
+  FOUNDRY_AUTO_DEPLOY_BYO_MODELS: "false"
+  {{- end }}
+  
+  # Server configuration
+  FOUNDRY_SERVER_URL: "http://localhost:5000"
+  ASPNETCORE_ENVIRONMENT: "Production"
+  
+  # .NET runtime configuration
+  DOTNET_RUNNING_IN_CONTAINER: "true"
+  DOTNET_USE_POLLING_FILE_WATCHER: "true"
+  NUGET_XMLDOC_MODE: "skip"
+  
+  # Home directory
+  HOME: "/home/foundry"
+  
+  {{- range .Values.foundry.extraEnvVars }}
+  {{ .name }}: {{ .value | quote }}
+  {{- end }}
+{{- end }}

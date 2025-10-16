@@ -1,0 +1,61 @@
+# GPU deployment example
+foundry:
+  # Explicitly set deployment type to GPU
+  deploymentType: "gpu"
+  
+  # Use a working GPU model for testing
+  model: "qwen2.5-coder-0.5b-instruct-cuda-gpu:3"
+  
+  # Use the proven CUDA 12.6.2 image with auto-deployment functionality
+  images:
+    gpu:
+      repository: foundry-local-gpu  
+      tag: "cuda-12.6.2-latest"
+      registry: jumpstartdev.azurecr.io
+  
+  image:
+    pullPolicy: Always
+  
+  # Enable auto-deployment with explicit environment variables
+  envVars:
+    - name: FOUNDRY_AUTO_DEPLOY_MODEL
+      value: "qwen2.5-coder-0.5b-instruct-cuda-gpu:3"
+    - name: FOUNDRY_AUTO_DEPLOY_BYO_MODELS
+      value: "false"
+    - name: FOUNDRY_STARTUP_AUTO_DEPLOY
+      value: "true"
+  
+  # GPU-specific environment variables
+  gpuEnvVars:
+    - name: CUDA_VISIBLE_DEVICES
+      value: "0"
+    - name: NVIDIA_DRIVER_CAPABILITIES
+      value: "compute,utility"
+  
+  # Larger cache for GPU models
+  volumes:
+    modelCache:
+      size: "50Gi"
+  
+  # GPU-specific configuration
+  gpu:
+    runtimeClassName: "nvidia"  # Use nvidia runtime for GPU access
+    nodeSelector:
+      nvidia.com/gpu.present: "true"
+      # kubernetes.io/hostname: "rog02"  # Optional: Target specific GPU node
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+  
+  # Override security context for GPU access
+  securityContext:
+    gpu:
+      privileged: true
+      allowPrivilegeEscalation: true
+
+# Enable Open WebUI with the correct model
+openWebUI:
+  enabled: true
+  config:
+    defaultModels: "qwen2.5-coder-0.5b-instruct-cuda-gpu:3"

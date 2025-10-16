@@ -1,0 +1,118 @@
+# Foundry Local GPU-ORAS Helm Values
+# This file will be auto-updated by Flux when new model artifacts are pushed
+
+# Global settings
+global:
+  # Container image registry (for Foundry container images)
+  imageRegistry: "jumpstartdev.azurecr.io"
+  # Pull policy for all images
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: acr-credentials
+
+# Foundry configuration
+foundry:
+  enabled: true
+  deploymentType: "gpu-oras"
+  
+  # BYO model configuration
+  byo:
+    enabled: true
+    registry: "foundryoci.azurecr.io"
+    repository: "foundry-local-olive-models"
+    tag: "v0.1.0" # {"$imagepolicy": "flux-system:foundry-local-olive-models:tag"}
+    auth:
+      enabled: false
+  
+  # Placeholder model name (actual model comes from ORAS)
+  model: "llama-3.2"
+  
+  # Image configuration
+  images:
+    gpu-oras:
+      repository: foundry-local-gpu-oras
+      tag: "latest"
+  
+  # Resource allocation
+  resources:
+    gpu-oras:
+      requests:
+        memory: "8Gi"
+        cpu: "2"
+        nvidia.com/gpu: "1"
+      limits:
+        memory: "32Gi"
+        cpu: "8"
+        nvidia.com/gpu: "1"
+  
+  # GPU configuration
+  gpu:
+    runtimeClassName: null  # Auto-detect
+    nodeSelector:
+      nvidia.com/gpu.present: "true"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+  
+  # GPU-ORAS environment variables
+  gpuOrasEnvVars:
+    - name: CUDA_VISIBLE_DEVICES
+      value: "0"
+    - name: NVIDIA_DRIVER_CAPABILITIES
+      value: "compute,utility"
+    - name: ORAS_DEBUG
+      value: "false"
+  
+  # Health checks - extended for model download
+  healthChecks:
+    startupProbe:
+      initialDelaySeconds: 180
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 40  # Up to 20 minutes for large models
+    livenessProbe:
+      initialDelaySeconds: 120
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 60
+      periodSeconds: 15
+      timeoutSeconds: 30
+      failureThreshold: 3
+  
+  # Security context
+  securityContext:
+    podSecurityContext:
+      fsGroup: 1001
+      seccompProfile:
+        type: RuntimeDefault
+    gpu-oras:
+      privileged: true
+      allowPrivilegeEscalation: true
+      runAsUser: 0
+      capabilities:
+        add:
+          - SYS_ADMIN
+  
+  # Persistent volumes
+  volumes:
+    modelCache:
+      size: "20Gi"
+    foundryHome:
+      size: "1Gi"
+  
+  # Service configuration
+  service:
+    type: NodePort
+    port: 5000
+    nodePort: 30500
+
+# Disable Open WebUI for now
+openWebUI:
+  enabled: false
+
+# Disable autoscaling
+autoscaling:
+  enabled: false

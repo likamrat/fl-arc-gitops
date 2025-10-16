@@ -1,0 +1,64 @@
+# Example values for GPU-ORAS deployment with BYO models
+
+# Configure for GPU-ORAS deployment with BYO models
+foundry:
+  # Explicitly set deployment type to GPU-ORAS
+  deploymentType: "gpu-oras"
+  
+  # Enable BYO model deployment
+  byo:
+    enabled: true
+    # Configure your ORAS registry
+    registry: "jumpstartdev.azurecr.io"
+    repository: "foundry-local-olive-models"
+    tag: "latest"
+    # Optional authentication (use secrets in production)
+    auth:
+      enabled: false
+      username: ""
+      password: ""
+  
+  # Model field is not used for BYO deployments (actual model comes from ORAS)
+  # This is just a placeholder - the real llama-3.2 model comes from ORAS registry
+  model: "llama-3.2"
+  
+  # GPU-ORAS specific environment variables
+  gpuOrasEnvVars:
+    - name: CUDA_VISIBLE_DEVICES
+      value: "0"
+    - name: NVIDIA_DRIVER_CAPABILITIES
+      value: "compute,utility"
+    - name: ORAS_DEBUG
+      value: "false"
+  
+  # Increase startup probe timeout for model download and GPU initialization
+  healthChecks:
+    startupProbe:
+      initialDelaySeconds: 180  # Allow more time for BYO model download + GPU setup
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 40      # Allow up to 20 minutes for large GPU models
+
+  # Target nodes with GPUs (disable explicit runtime class)
+  gpu:
+    # Explicitly disable runtimeClassName to auto-detect
+    runtimeClassName: null
+    nodeSelector:
+      nvidia.com/gpu.present: "true"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+# Enable Open WebUI (will automatically detect available models)
+openWebUI:
+  enabled: true
+  config:
+    defaultModels: ""  # Will be automatically populated
+
+# Optional: Enable autoscaling for GPU-ORAS workloads
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 70

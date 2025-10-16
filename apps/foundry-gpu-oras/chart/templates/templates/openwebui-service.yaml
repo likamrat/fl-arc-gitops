@@ -1,0 +1,32 @@
+{{- if .Values.openWebUI.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "foundry-local.openwebui.serviceName" . }}
+  namespace: {{ include "foundry-local.namespace" . }}
+  labels:
+    {{- include "foundry-local.labels" . | nindent 4 }}
+    app.kubernetes.io/component: open-webui
+  {{- with .Values.openWebUI.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.openWebUI.service.type }}
+  {{- if and (eq .Values.openWebUI.service.type "NodePort") .Values.openWebUI.service.nodePort }}
+  ports:
+  - port: {{ .Values.openWebUI.service.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+    nodePort: {{ .Values.openWebUI.service.nodePort }}
+  {{- else }}
+  ports:
+  - port: {{ .Values.openWebUI.service.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  {{- end }}
+  selector:
+    {{- include "foundry-local.openwebui.selectorLabels" . | nindent 4 }}
+{{- end }}

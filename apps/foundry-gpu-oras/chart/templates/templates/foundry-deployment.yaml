@@ -1,0 +1,135 @@
+{{- if .Values.foundry.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "foundry-local.fullname" . }}-foundry
+  namespace: {{ include "foundry-local.namespace" . }}
+  labels:
+    {{- include "foundry-local.labels" . | nindent 4 }}
+    app.kubernetes.io/component: foundry
+    foundry.deployment/type: {{ include "foundry-local.foundry.type" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "foundry-local.foundry.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "foundry-local.foundry.selectorLabels" . | nindent 8 }}
+        foundry.deployment/type: {{ include "foundry-local.foundry.type" . }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/foundry-configmap.yaml") . | sha256sum }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or (eq (include "foundry-local.foundry.type" .) "gpu") (eq (include "foundry-local.foundry.type" .) "gpu-oras") }}
+      {{- if .Values.foundry.gpu.runtimeClassName }}
+      runtimeClassName: {{ .Values.foundry.gpu.runtimeClassName }}
+      {{- end }}
+      {{- end }}
+      {{- $nodeSelector := include "foundry-local.foundry.nodeSelector" . }}
+      {{- if ne $nodeSelector "{}" }}
+      nodeSelector:
+        {{- $nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- with .Values.foundry.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- $tolerations := include "foundry-local.foundry.tolerations" . }}
+      {{- if ne $tolerations "[]" }}
+      tolerations:
+        {{- $tolerations | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.foundry.securityContext.podSecurityContext | nindent 8 }}
+      containers:
+      - name: foundry
+        image: {{ include "foundry-local.foundry.image" . }}
+        imagePullPolicy: {{ .Values.foundry.image.pullPolicy | default .Values.global.imagePullPolicy }}
+        ports:
+        - name: http
+          containerPort: 5000
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: {{ include "foundry-local.fullname" . }}-foundry-config
+        {{- $envVars := include "foundry-local.foundry.envVars" . }}
+        {{- if ne $envVars "[]" }}
+        env:
+        {{- $envVars | nindent 8 }}
+        {{- end }}
+        resources:
+          {{- include "foundry-local.foundry.resources" . | nindent 10 }}
+        volumeMounts:
+        - name: model-cache
+          mountPath: /home/foundry/.foundry/cache
+        - name: foundry-home
+          mountPath: /home/foundry/.aitk
+        securityContext:
+          {{- include "foundry-local.foundry.securityContext" . | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /v1/models
+            port: http
+          initialDelaySeconds: {{ .Values.foundry.healthChecks.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.foundry.healthChecks.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.foundry.healthChecks.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.foundry.healthChecks.livenessProbe.failureThreshold }}
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - |
+              # Check if service is responding and has loaded models
+              MODELS_RESPONSE=$(curl -s http://localhost:5000/v1/models || exit 1)
+              # Simple check: if response contains model data, we have models
+              if echo "$MODELS_RESPONSE" | grep -q '"id":'; then
+                echo "Models detected, testing inference..."
+                # Test with a simple inference request - extract model ID manually
+                MODEL_ID=$(echo "$MODELS_RESPONSE" | sed -n 's/.*"id":"\([^"]*\)".*/\1/p' | head -1)
+                if [ -z "$MODEL_ID" ]; then
+                  echo "Could not extract model ID"
+                  exit 1
+                fi
+                echo "Testing model: $MODEL_ID"
+                TEST_RESPONSE=$(curl -s -X POST http://localhost:5000/v1/chat/completions \
+                  -H "Content-Type: application/json" \
+                  -d "{\"model\": \"$MODEL_ID\", \"messages\": [{\"role\": \"user\", \"content\": \"test\"}], \"max_tokens\": 1}" \
+                  2>/dev/null || exit 1)
+                if echo "$TEST_RESPONSE" | grep -q '"content":'; then
+                  echo "Model ready for inference"
+                  exit 0
+                else
+                  echo "Model inference test failed"
+                  exit 1
+                fi
+              else
+                echo "No models loaded yet"
+                exit 1
+              fi
+          initialDelaySeconds: {{ .Values.foundry.healthChecks.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.foundry.healthChecks.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.foundry.healthChecks.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.foundry.healthChecks.readinessProbe.failureThreshold }}
+        startupProbe:
+          httpGet:
+            path: /v1/models
+            port: http
+          initialDelaySeconds: {{ .Values.foundry.healthChecks.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.foundry.healthChecks.startupProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.foundry.healthChecks.startupProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.foundry.healthChecks.startupProbe.failureThreshold }}
+      volumes:
+      - name: model-cache
+        emptyDir:
+          sizeLimit: {{ .Values.foundry.volumes.modelCache.size }}
+      - name: foundry-home
+        emptyDir:
+          sizeLimit: {{ .Values.foundry.volumes.foundryHome.size }}
+      restartPolicy: Always
+{{- end }}
