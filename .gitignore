@@ -1,2 +1,9 @@
 apps/foundry-gpu-oras/models/
 backup/
+
+# Olive workspace for model optimization
+olive-workspace/
+*.pyc
+__pycache__/
+.venv/
+venv/
