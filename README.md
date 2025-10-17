@@ -44,7 +44,7 @@ See [QUICK_START.md](QUICK_START.md) for detailed instructions.
 - **[QUICK_START.md](QUICK_START.md)** - Fast-track guide to run E2E test
 - **[E2E_TEST_PLAN.md](E2E_TEST_PLAN.md)** - Comprehensive test plan with all phases
 - **[GITOPS_FLOW_SUMMARY.md](GITOPS_FLOW_SUMMARY.md)** - GitOps architecture and flow
-- **[CLEANUP_STATUS.md](CLEANUP_STATUS.md)** - Cleanup procedures and status
+- **[CLEANUP_GUIDE.md](CLEANUP_GUIDE.md)** - Cleanup modes, usage examples, and troubleshooting
 
 ## 🏗️ Repository Structure
 
