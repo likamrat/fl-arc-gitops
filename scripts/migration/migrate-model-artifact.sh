@@ -21,8 +21,8 @@ SOURCE_TAG="latest"
 
 # Destination registry (new GitOps target)
 DEST_REGISTRY="foundryoci.azurecr.io"
-DEST_REPO="foundry-local-olive-models"
-DEST_TAG="v0.1.0"  # Semantic version for GitOps ImagePolicy
+DEST_REPO="byo-models-gpu/llama-3.2-1b-cuda"
+DEST_TAG="v1.0.0"  # Semantic version for GitOps ImagePolicy
 
 SOURCE_IMAGE="${SOURCE_REGISTRY}/${SOURCE_REPO}:${SOURCE_TAG}"
 DEST_IMAGE="${DEST_REGISTRY}/${DEST_REPO}:${DEST_TAG}"

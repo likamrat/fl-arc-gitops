@@ -154,12 +154,12 @@ helm uninstall gpu-operator --namespace gpu-operator-system
 
 The automated installation script is available at:
 ```
-scripts/gpu-operator-install.sh
+scripts/setup/gpu-operator-install.sh
 ```
 
 To reinstall or update:
 ```bash
-./scripts/gpu-operator-install.sh
+./scripts/setup/gpu-operator-install.sh
 ```
 
 ## References

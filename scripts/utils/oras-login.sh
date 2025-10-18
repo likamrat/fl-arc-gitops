@@ -7,7 +7,7 @@
 # Docker credentials that are already configured.
 #
 # Usage:
-#   ./scripts/oras-login.sh
+#   ./scripts/utils/oras-login.sh
 ################################################################################
 
 set -e
@@ -131,8 +131,8 @@ echo -e "${BLUE}You can now use ORAS commands with ${REGISTRY}${NC}"
 echo ""
 echo -e "Examples:"
 echo -e "  ${YELLOW}# Pull an artifact${NC}"
-echo -e "  oras pull ${REGISTRY}/foundry-local-olive-models:latest"
+echo -e "  oras pull ${REGISTRY}/byo-models-gpu/llama-3.2-1b-cuda:v2.0.0"
 echo ""
 echo -e "  ${YELLOW}# Push an artifact${NC}"
-echo -e "  oras push ${REGISTRY}/foundry-local-olive-models:v1.0.0 ./models.tar.gz"
+echo -e "  oras push ${REGISTRY}/byo-models-gpu/llama-3.2-1b-cuda:v2.0.0 ./models.tar.gz"
 echo ""

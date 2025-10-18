@@ -63,7 +63,7 @@ metadata:
   name: foundry-local-olive-models
   namespace: flux-system
 spec:
-  image: foundryoci.azurecr.io/foundry-local-olive-models
+  image: foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda
   interval: 5s
 EOF
 
@@ -83,7 +83,7 @@ spec:
     name: foundry-local-olive-models
   policy:
     semver:
-      range: '>=0.1.0'
+      range: '>=1.0.0'
   filterTags:
     pattern: '^v?[0-9]+\.[0-9]+\.[0-9]+.*$'
     extract: '\$0'

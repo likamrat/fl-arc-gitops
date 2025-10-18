@@ -42,7 +42,11 @@
 #   ./scripts/demo-cleanup.sh                    # Full cleanup
 #   ./scripts/demo-cleanup.sh --soft             # Soft cleanup (GitOps rollback)
 #   ./scripts/demo-cleanup.sh --dry-run          # Full cleanup dry run
-#   ./scripts/demo-cleanup.sh --soft --dry-run   # Soft cleanup dry run
+# Usage:
+#   ./scripts/demo/demo-cleanup.sh --full             # Full cleanup
+#   ./scripts/demo/demo-cleanup.sh --soft             # Soft cleanup (GitOps rollback)
+#   ./scripts/demo/demo-cleanup.sh --full --dry-run   # Full cleanup dry run
+#   ./scripts/demo/demo-cleanup.sh --soft --dry-run   # Soft cleanup dry run
 ################################################################################
 
 set -e
@@ -50,6 +54,7 @@ set -e
 # Parse command line arguments
 DRY_RUN=false
 SOFT_MODE=false
+FULL_MODE=false
 
 for arg in "$@"; do
   case $arg in
@@ -61,11 +66,32 @@ for arg in "$@"; do
       SOFT_MODE=true
       shift
       ;;
+    --full|-f)
+      FULL_MODE=true
+      shift
+      ;;
     *)
       # Unknown option
       ;;
   esac
 done
+
+# Validate: must specify either --soft or --full
+if [[ "${SOFT_MODE}" == "false" && "${FULL_MODE}" == "false" ]]; then
+  echo -e "${RED}Error: Must specify either --full or --soft mode${NC}"
+  echo ""
+  echo "Usage:"
+  echo "  $0 --full [--dry-run]   # Full cleanup (removes Flux config, namespace, all artifacts except v1.0.0)"
+  echo "  $0 --soft [--dry-run]   # Soft cleanup (GitOps rollback, keeps Flux config and namespace)"
+  echo ""
+  exit 1
+fi
+
+# Validate: can't use both --soft and --full
+if [[ "${SOFT_MODE}" == "true" && "${FULL_MODE}" == "true" ]]; then
+  echo -e "${RED}Error: Cannot use both --soft and --full flags${NC}"
+  exit 1
+fi
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -82,20 +108,20 @@ RESOURCE_GROUP="Foundry-Arc"
 CONFIG_NAME="foundry-gitops"
 NAMESPACE="foundry-system"
 REGISTRY="foundryoci.azurecr.io"
-REPO_NAME="foundry-local-olive-models"
-VERSION_TO_REVERT="v0.1.0"
+REPO_NAME="byo-models-gpu/llama-3.2-1b-cuda"
+VERSION_TO_REVERT="v1.0.0"
 
 echo -e "${BLUE}╔═══════════════════════════════════════════════════════════╗${NC}"
 if [[ "${DRY_RUN}" == "true" ]]; then
   if [[ "${SOFT_MODE}" == "true" ]]; then
     echo -e "${BLUE}║      Demo Cleanup Script - SOFT MODE (DRY RUN)           ║${NC}"
-  else
+  elif [[ "${FULL_MODE}" == "true" ]]; then
     echo -e "${BLUE}║      Demo Cleanup Script - FULL MODE (DRY RUN)           ║${NC}"
   fi
 else
   if [[ "${SOFT_MODE}" == "true" ]]; then
     echo -e "${BLUE}║      Demo Cleanup Script - SOFT MODE                     ║${NC}"
-  else
+  elif [[ "${FULL_MODE}" == "true" ]]; then
     echo -e "${BLUE}║      Demo Cleanup Script - FULL MODE                     ║${NC}"
   fi
 fi
@@ -700,7 +726,7 @@ fi
 
 echo -e "${CYAN}Next Steps:${NC}"
 echo "  1. Verify OCI artifact ${VERSION_TO_REVERT} exists in registry"
-echo -e "  2. Run: ${YELLOW}./scripts/gitops-config.sh${NC} to redeploy"
+echo -e "  2. Run: ${YELLOW}./scripts/setup/gitops-config.sh${NC} to redeploy"
 echo "  3. System will deploy Foundry Local with ${VERSION_TO_REVERT}"
 echo ""
 if [[ "${DRY_RUN}" == "true" ]]; then

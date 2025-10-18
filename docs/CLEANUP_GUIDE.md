@@ -10,21 +10,23 @@ The cleanup script provides two modes to reset your environment:
 
 ## 🔧 Cleanup Modes
 
-### Full Cleanup (Default)
+### Full Cleanup
 
 **Complete environment reset** - Use this when you want to start completely fresh.
 
 ```bash
-./scripts/demo-cleanup.sh
+./scripts/demo/demo-cleanup.sh --full
 ```
+
+**Note**: You must explicitly specify either `--full` or `--soft` mode. The script requires explicit mode selection for safety.
 
 #### What it Does
 
 - ✅ Deletes Flux GitOps configuration from Arc cluster
 - ✅ Removes Foundry Local application (Helm release, pods, services)
 - ✅ Deletes `foundry-system` namespace
-- ✅ Removes all OCI artifacts from ACR **except v0.1.0**
-- ✅ Reverts Git repository code to v0.1.0
+- ✅ Removes all OCI artifacts from ACR **except v1.0.0**
+- ✅ Reverts Git repository code to v1.0.0
 - ✅ Commits and pushes changes to Git
 - ✅ Verifies Flux system controllers remain healthy
 
@@ -34,29 +36,29 @@ The cleanup script provides two modes to reset your environment:
 - ✅ ImageRepository/ImagePolicy resources (in flux-system)
 - ✅ Flux system namespace and controllers
 - ✅ GPU operator and cluster infrastructure
-- ✅ OCI artifact v0.1.0 in registry (baseline for next demo)
+- ✅ OCI artifact v1.0.0 in registry (baseline for next demo)
 
 #### After Full Cleanup
 
 You need to redeploy GitOps configuration:
 ```bash
-./scripts/gitops-config.sh
+./scripts/setup/gitops-config.sh
 ```
 
 ---
 
 ### Soft Cleanup (Recommended for Quick Reset)
 
-**GitOps-based rollback** - Use this when you want to quickly reset to v0.1.0 without tearing down infrastructure.
+**GitOps-based rollback** - Use this when you want to quickly reset to v1.0.0 without tearing down infrastructure.
 
 ```bash
-./scripts/demo-cleanup.sh --soft
+./scripts/demo/demo-cleanup.sh --soft
 ```
 
 #### What it Does
 
-- ✅ Removes all OCI artifacts from ACR **except v0.1.0**
-- ✅ Reverts Git repository code to v0.1.0
+- ✅ Removes all OCI artifacts from ACR **except v1.0.0**
+- ✅ Reverts Git repository code to v1.0.0
 - ✅ Commits and pushes changes to Git
 - ✅ Waits for GitOps to sync and rollback deployment (60s)
 - ✅ Validates resources on cluster:
@@ -75,7 +77,7 @@ You need to redeploy GitOps configuration:
 
 #### After Soft Cleanup
 
-**No action needed!** GitOps automatically rolls back to v0.1.0. Just verify the deployment:
+**No action needed!** GitOps automatically rolls back to v1.0.0. Just verify the deployment:
 ```bash
 kubectl get pods -n foundry-system
 kubectl logs -n foundry-system -l app.kubernetes.io/component=foundry | grep "Tag:"
@@ -89,10 +91,10 @@ Preview what will happen **without making any changes**:
 
 ```bash
 # Preview full cleanup
-./scripts/demo-cleanup.sh --dry-run
+./scripts/demo/demo-cleanup.sh --full --dry-run
 
 # Preview soft cleanup
-./scripts/demo-cleanup.sh --soft --dry-run
+./scripts/demo/demo-cleanup.sh --soft --dry-run
 ```
 
 Dry run mode shows:
@@ -110,8 +112,8 @@ Dry run mode shows:
 | **Speed** | ~2 min + redeployment | ~1 min (GitOps handles it) |
 | **GitOps Config** | ❌ Deleted | ✅ Preserved |
 | **Namespace** | ❌ Deleted | ✅ Preserved |
-| **OCI Artifacts** | 🔄 Removed (keep v0.1.0) | 🔄 Removed (keep v0.1.0) |
-| **Git Code** | 🔄 Reverted to v0.1.0 | 🔄 Reverted to v0.1.0 |
+| **OCI Artifacts** | 🔄 Removed (keep v1.0.0) | 🔄 Removed (keep v1.0.0) |
+| **Git Code** | 🔄 Reverted to v1.0.0 | 🔄 Reverted to v1.0.0 |
 | **Validation** | ⚠️ Manual | ✅ Automatic |
 | **Next Demo** | Requires `gitops-config.sh` | Ready immediately |
 | **Use Case** | Complete reset | Quick rollback |
@@ -121,32 +123,34 @@ Dry run mode shows:
 ## 🚀 Usage Examples
 
 ### Scenario 1: Quick Demo Reset
-You've completed a demo showing v0.1.0 → v0.2.0 and want to reset quickly:
+
+You've completed a demo showing v1.0.0 → v2.0.0 and want to reset quickly:
 
 ```bash
 # Preview first
-./scripts/demo-cleanup.sh --soft --dry-run
+./scripts/demo/demo-cleanup.sh --soft --dry-run
 
 # Execute soft cleanup
-./scripts/demo-cleanup.sh --soft
+./scripts/demo/demo-cleanup.sh --soft
 
 # Verify rollback
 kubectl get pods -n foundry-system -w
 ```
 
-**Result**: System automatically rolls back to v0.1.0 via GitOps in ~1 minute.
+**Result**: System automatically rolls back to v1.0.0 via GitOps in ~1 minute.
 
 ---
 
 ### Scenario 2: Complete Environment Reset
+
 You want to demonstrate the full GitOps setup from scratch:
 
 ```bash
 # Full cleanup
-./scripts/demo-cleanup.sh
+./scripts/demo/demo-cleanup.sh --full
 
 # Redeploy GitOps config
-./scripts/gitops-config.sh
+./scripts/setup/gitops-config.sh
 
 # Wait for deployment (~2 minutes)
 watch kubectl get pods -n foundry-system
@@ -157,23 +161,24 @@ watch kubectl get pods -n foundry-system
 ---
 
 ### Scenario 3: Testing Upgrade Path Again
-You want to test v0.1.0 → v0.2.0 → v0.3.0 upgrade flow:
+
+You want to test v1.0.0 → v2.0.0 → v3.0.0 upgrade flow:
 
 ```bash
-# Soft cleanup (back to v0.1.0)
-./scripts/demo-cleanup.sh --soft
+# Soft cleanup (back to v1.0.0)
+./scripts/demo/demo-cleanup.sh --soft
 
-# Push v0.2.0 artifact
+# Push v2.0.0 artifact
 cd apps/foundry-gpu-oras/models
-oras push foundryoci.azurecr.io/foundry-local-olive-models:v0.2.0 \
+oras push foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda:v2.0.0 \
   --artifact-type "foundry/models" \
   models.tar.gz:application/gzip
 
 # Update Git
 cd /home/lior/repos/fl-arc-gitops
-sed -i 's/tag: v0.1.0/tag: v0.2.0/' apps/foundry-gpu-oras/helmrelease.yaml
+sed -i 's/tag: v1.0.0/tag: v2.0.0/' apps/foundry-gpu-oras/helmrelease.yaml
 git add apps/foundry-gpu-oras/helmrelease.yaml
-git commit -m "Update to v0.2.0"
+git commit -m "Update to v2.0.0"
 git push origin main
 
 # Monitor upgrade
@@ -184,7 +189,8 @@ watch kubectl get pods -n foundry-system
 
 ## 🔍 Validation After Cleanup
 
-### For Full Cleanup:
+### For Full Cleanup
+
 ```bash
 # Verify GitOps config deleted
 az k8s-configuration flux list \
@@ -199,7 +205,8 @@ kubectl get namespace foundry-system
 kubectl get pods -n flux-system
 ```
 
-### For Soft Cleanup:
+### For Soft Cleanup
+
 ```bash
 # Check HelmRelease
 kubectl get helmrelease -n foundry-system
@@ -207,7 +214,7 @@ kubectl get helmrelease -n foundry-system
 # Check pods
 kubectl get pods -n foundry-system
 
-# Verify v0.1.0 deployed
+# Verify v1.0.0 deployed
 kubectl logs -n foundry-system -l app.kubernetes.io/component=foundry | grep "Tag:"
 
 # Check ImagePolicy
@@ -233,7 +240,7 @@ Before running cleanup:
 3. **ORAS CLI** - Installed and logged in to ACR (for artifact deletion)
    ```bash
    oras version
-   bash scripts/oras-login.sh
+   bash scripts/utils/oras-login.sh
    ```
 
 4. **Clean Git** - No uncommitted changes
@@ -272,7 +279,7 @@ flux reconcile helmrelease foundry-gpu-oras -n foundry-system
 ### Issue: Cannot delete OCI artifacts
 **Solution**: Authenticate with ORAS
 ```bash
-bash scripts/oras-login.sh
+bash scripts/utils/oras-login.sh
 # OR manually
 oras login foundryoci.azurecr.io
 ```
@@ -288,10 +295,10 @@ kubectl logs -n flux-system -l app=source-controller
 
 ## 📚 Related Documentation
 
-- **[QUICK_START.md](QUICK_START.md)** - Fast-track guide to run E2E test
-- **[E2E_TEST_PLAN.md](E2E_TEST_PLAN.md)** - Comprehensive test plan
-- **[GITOPS_FLOW_SUMMARY.md](GITOPS_FLOW_SUMMARY.md)** - GitOps architecture and flow
-- **[README.md](README.md)** - Main repository documentation
+- **[README.md](../README.md)** - Main repository documentation
+- **[DEMO_FLOW.md](./DEMO_FLOW.md)** - Step-by-step demo workflow
+- **[GITOPS_FLOW_SUMMARY.md](./GITOPS_FLOW_SUMMARY.md)** - GitOps architecture and flow
+- **[GPU_OPERATOR_INSTALLATION.md](./GPU_OPERATOR_INSTALLATION.md)** - GPU operator setup guide
 
 ---
 
@@ -301,7 +308,8 @@ kubectl logs -n flux-system -l app=source-controller
 2. **Use soft cleanup for demos** - faster and preserves infrastructure
 3. **Use full cleanup for E2E tests** - demonstrates complete GitOps setup
 4. **Check cluster state before cleanup** to understand what will be affected
-5. **Keep v0.1.0 artifact** in registry as your baseline (script preserves it)
+5. **Keep v1.0.0 artifact** in registry as your baseline (script preserves it)
+6. **Explicit mode required** - always specify either `--full` or `--soft`
 
 ---
 
@@ -309,17 +317,38 @@ kubectl logs -n flux-system -l app=source-controller
 
 ```bash
 # Quick reset (recommended)
-./scripts/demo-cleanup.sh --soft
+./scripts/demo/demo-cleanup.sh --soft
 
 # Full reset
-./scripts/demo-cleanup.sh
+./scripts/demo/demo-cleanup.sh --full
 
 # Preview only
-./scripts/demo-cleanup.sh --soft --dry-run
-./scripts/demo-cleanup.sh --dry-run
+./scripts/demo/demo-cleanup.sh --soft --dry-run
+./scripts/demo/demo-cleanup.sh --full --dry-run
 
 # After full cleanup
-./scripts/gitops-config.sh
+./scripts/setup/gitops-config.sh
+```
+
+---
+
+## 🔄 Model Repository Structure
+
+The cleanup script now uses the hierarchical GPU model repository:
+
+- **Repository**: `foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda`
+- **Baseline Version**: `v1.0.0` (preserved during cleanup)
+- **Model**: CUDA-optimized Llama 3.2 1B (int4 quantized, ~1GB)
+- **Source**: onnx-community/Llama-3.2-1B-Instruct-ONNX
+
+This structure allows multiple GPU-optimized models in the same registry namespace while maintaining clear version control per model variant.
+
+---
+
+**Version**: v1.0.0  
+**Last Updated**: October 18, 2025  
+**Status**: Updated for GPU-accelerated models and explicit mode selection
+./scripts/setup/gitops-config.sh
 ```
 
 ---

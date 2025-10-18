@@ -1,18 +1,19 @@
-# Azure Arc + Flux GitOps - Foundry Local with BYO ORAS Models
+# Azure Arc + Flux GitOps - Foundry Local with GPU-Accelerated BYO ORAS Models
 
-This repository demonstrates GitOps-based deployment of **Foundry Local with GPU support** using **Azure Arc-enabled Kubernetes**, **Flux CD**, and **BYO ORAS model artifacts** from Azure Container Registry.
+This repository demonstrates GitOps-based deployment of **Foundry Local with GPU acceleration** using **Azure Arc-enabled Kubernetes**, **Flux CD**, and **CUDA-optimized BYO ORAS model artifacts** from Azure Container Registry.
 
 ## 🎯 Overview
 
-**Goal**: Automate the deployment and upgrade of Foundry Local (AI/LLM container) on Kubernetes using GitOps principles, with model artifacts stored as OCI artifacts in Azure Container Registry.
+**Goal**: Automate the deployment and upgrade of Foundry Local (AI/LLM container) on Kubernetes using GitOps principles, with GPU-accelerated model artifacts stored as OCI artifacts in Azure Container Registry.
 
 **Architecture**:
-- **Cluster**: k3s v1.33.5 with NVIDIA GPU (RTX 5080)
+- **Cluster**: k3s v1.33.5 with NVIDIA GPU (RTX 5080 16GB, CUDA 13.0)
 - **GitOps Engine**: Flux CD v1.17.3 (via Azure Arc extension)
 - **Azure Arc**: ROG-AI cluster in Foundry-Arc resource group
 - **Container Registry**: foundryoci.azurecr.io (anonymous pull enabled)
 - **Model Artifacts**: ORAS OCI artifacts (foundry/models artifact type)
 - **Deployment**: Helm chart with BYO ORAS configuration
+- **GPU Models**: CUDA-optimized ONNX Runtime GenAI format (int4 quantized)
 
 ## ⚡ Performance Optimizations
 
@@ -34,17 +35,15 @@ This repository demonstrates GitOps-based deployment of **Foundry Local with GPU
 
 **Deploy GitOps Configuration**:
 ```bash
-bash scripts/gitops-config.sh
+bash scripts/setup/gitops-config.sh
 ```
-
-See [QUICK_START.md](QUICK_START.md) for detailed instructions.
 
 ## 📚 Documentation
 
-- **[QUICK_START.md](QUICK_START.md)** - Fast-track guide to run E2E test
-- **[E2E_TEST_PLAN.md](E2E_TEST_PLAN.md)** - Comprehensive test plan with all phases
-- **[GITOPS_FLOW_SUMMARY.md](GITOPS_FLOW_SUMMARY.md)** - GitOps architecture and flow
-- **[CLEANUP_GUIDE.md](CLEANUP_GUIDE.md)** - Cleanup modes, usage examples, and troubleshooting
+- **[DEMO_FLOW.md](docs/DEMO_FLOW.md)** - Step-by-step demo workflow (v1.0.0 → v2.0.0)
+- **[GITOPS_FLOW_SUMMARY.md](docs/GITOPS_FLOW_SUMMARY.md)** - GitOps architecture and flow
+- **[CLEANUP_GUIDE.md](docs/CLEANUP_GUIDE.md)** - Cleanup modes, usage examples, and troubleshooting
+- **[GPU_OPERATOR_INSTALLATION.md](docs/GPU_OPERATOR_INSTALLATION.md)** - GPU operator setup guide
 
 ## 🏗️ Repository Structure
 
@@ -58,9 +57,25 @@ See [QUICK_START.md](QUICK_START.md) for detailed instructions.
 ├── infrastructure/
 │   └── kustomization.yaml            # Infrastructure Kustomization
 ├── scripts/
-│   ├── gitops-config.sh              # Deploy GitOps config via Azure Arc
-│   ├── oras-login.sh                 # ORAS authentication helper
-│   └── migrate-container-image.sh    # Container migration helper
+│   ├── setup/                        # Setup and installation scripts
+│   │   ├── gitops-config.sh          # Deploy GitOps config via Azure Arc
+│   │   ├── flux-setup.sh             # Flux CD setup helper
+│   │   └── gpu-operator-install.sh   # GPU operator installation
+│   ├── demo/                         # Demo and cleanup scripts
+│   │   └── demo-cleanup.sh           # Environment cleanup (full/soft modes)
+│   ├── utils/                        # Utility scripts
+│   │   ├── oras-login.sh             # ORAS authentication helper
+│   │   ├── gpu-test.sh               # GPU testing utilities
+│   │   ├── fix-file-descriptors.sh   # Local file descriptor fixes
+│   │   └── fix-remote-file-descriptors.sh  # Remote file descriptor fixes
+│   └── migration/                    # Migration scripts
+│       ├── migrate-container-image.sh    # Container migration helper
+│       └── migrate-model-artifact.sh     # Model artifact migration helper
+├── docs/                             # Documentation
+│   ├── DEMO_FLOW.md                  # Step-by-step demo workflow
+│   ├── GITOPS_FLOW_SUMMARY.md        # GitOps architecture and flow
+│   ├── CLEANUP_GUIDE.md              # Cleanup procedures
+│   └── GPU_OPERATOR_INSTALLATION.md  # GPU operator setup guide
 └── flux-system/
     └── kustomization.yaml            # Flux system Kustomization
 ```
@@ -77,10 +92,13 @@ See [QUICK_START.md](QUICK_START.md) for detailed instructions.
 - Public network access enabled
 - Simplified authentication
 
-### 3. BYO ORAS Model Artifacts
-- Models stored as OCI artifacts in ACR
-- Runtime download via ORAS
-- Version-controlled with semver tags
+### 3. GPU-Accelerated BYO ORAS Model Artifacts
+- CUDA-optimized ONNX Runtime GenAI models
+- Models stored as OCI artifacts in ACR with hierarchical structure
+- Runtime download via ORAS from `byo-models-gpu/{model-name}:{version}`
+- Version-controlled with semver tags (v1.0.0, v2.0.0)
+- Example: Llama 3.2 1B int4 quantized from onnx-community
+- CUDAExecutionProvider with int4 quantization for optimal GPU performance
 
 ### 4. Post-Deployment Interval Patching
 - Azure CLI doesn't support retry-interval directly
@@ -97,7 +115,7 @@ See [QUICK_START.md](QUICK_START.md) for detailed instructions.
 **Run E2E test**:
 ```bash
 cd /home/lior/repos/fl-arc-gitops
-bash scripts/gitops-config.sh
+bash scripts/setup/gitops-config.sh
 ```
 
 **Monitor deployment**:
@@ -111,24 +129,26 @@ kubectl logs -n foundry-system -l app.kubernetes.io/component=foundry | grep "Ta
 ```
 
 **Test upgrade flow**:
-1. Push new OCI artifact (v0.2.0)
-2. Update helmrelease.yaml tag
+
+1. Push new OCI artifact (v2.0.0) to `byo-models-gpu/llama-3.2-1b-cuda:v2.0.0`
+2. Update helmrelease.yaml tag (v1.0.0 → v2.0.0)
 3. Git commit + push
 4. Watch GitOps sync (within 3-5 seconds)
+5. Verify GPU model deployment with CUDA acceleration
+
+See [DEMO_FLOW.md](docs/DEMO_FLOW.md) for detailed step-by-step demo instructions.
 
 ## 🧹 Cleanup
 
 ```bash
-az k8s-configuration flux delete \
-  --name foundry-gitops \
-  --cluster-name ROG-AI \
-  --cluster-type connectedClusters \
-  --resource-group Foundry-Arc \
-  --yes
+# Full cleanup (removes all GitOps resources)
+bash scripts/demo/demo-cleanup.sh --full
 
-kubectl delete namespace foundry-system
-kubectl delete imagerepository,imagepolicy foundry-local-olive-models -n flux-system
+# Soft cleanup (GitOps-based rollback to v1.0.0)
+bash scripts/demo/demo-cleanup.sh --soft
 ```
+
+See [CLEANUP_GUIDE.md](docs/CLEANUP_GUIDE.md) for detailed cleanup options and usage examples.
 
 ## 📊 Performance Metrics
 
@@ -170,6 +190,6 @@ MIT License - See LICENSE file for details
 
 ---
 
-**Status**: ✅ Ready for E2E testing  
-**Latest Commit**: 004f0d2  
-**Last Updated**: 2025-01-22
+**Status**: ✅ GPU-accelerated model deployment ready  
+**Current Model**: Llama 3.2 1B CUDA (int4 quantized, v1.0.0/v2.0.0)  
+**Last Updated**: October 18, 2025
