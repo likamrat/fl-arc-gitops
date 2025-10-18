@@ -33,7 +33,7 @@ spec:
         enabled: true
         registry: foundryoci.azurecr.io
         repository: byo-models-gpu/llama-3.2-1b-cuda
-        tag: v1.0.0 # {"$imagepolicy": "flux-system:foundry-local-olive-models:tag"}
+        tag: v2.0.0 # {"$imagepolicy": "flux-system:foundry-local-olive-models:tag"}
       
       # Image configuration (uses global.imageRegistry)
       images:
