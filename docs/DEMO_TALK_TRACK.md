@@ -14,15 +14,20 @@
 | Tab&nbsp;4 | Watch Pods | `~` | `kubectl get pods -n foundry-system -w` |
 | Tab&nbsp;5 | Check Version (v2.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
 
+![Windows Terminal Tabs](img/termainl_tabs.png)
+
 ### 🔧 VS Code Setup
 
 > **Note:** Each command group gets its own terminal window in VS Code - ready to just hit Enter
 
 | Terminal/Editor | Purpose | Directory/File | Commands Ready to Run |
 |-----------------|---------|----------------|----------------------|
-| Terminal 1 | ORAS Push | `~/repos/fl-arc-gitops` | `cd apps/foundry-gpu-oras/models && oras push foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda:v2.0.0 --artifact-type "foundry/models" models.tar.gz:application/gzip` |
-| Terminal 2 | Git Commands | `~/repos/fl-arc-gitops` | `git add apps/foundry-gpu-oras/helmrelease.yaml`<br>`git commit -m "Upgrade Foundry Local GPU model to v2.0.0"`<br>`git push origin main` |
+| Terminal 1 | Blank | `~/repos/fl-arc-gitops` | (Empty - for clean demo start) |
+| Terminal 2 | ORAS Push | `~/repos/fl-arc-gitops` | `cd apps/foundry-gpu-oras/models && oras push foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda:v2.0.0 --artifact-type "foundry/models" models.tar.gz:application/gzip` |
+| Terminal 3 | Git Commands | `~/repos/fl-arc-gitops` | `git add apps/foundry-gpu-oras/helmrelease.yaml`<br>`git commit -m "Upgrade Foundry Local GPU model to v2.0.0"`<br>`git push origin main` |
 | Editor Tab | HelmRelease File | `apps/foundry-gpu-oras/helmrelease.yaml` | Open and ready - Change line 36: `v1.0.0` → `v2.0.0` |
+
+![VS Code Setup](img/vscode.png)
 
 ### 🌐 Browser Tabs
 
@@ -32,6 +37,9 @@
 | Edge | Tab 2 | Azure Portal - Container Registry (ACR with `byo-models-gpu/llama-3.2-1b-cuda` repo) |
 | Edge | Tab 3 | GitHub - fl-arc-gitops repository |
 | Edge | Tab 4 | Open WebUI - Model interaction |
+
+![Browser Tabs](img/browser_tabs.png)
+![Browser Start](img/browser_start.png)
 
 ### 🎯 Demo Flow Overview
 
@@ -46,10 +54,10 @@
 | 7 | 💻 Windows Terminal Tab 3 | Cache & version check | Show cached model and verify v1.0.0 |
 | 8 | 🌐 Browser Tab 4 | Test Open WebUI | Interact with v1.0.0 model |
 | 9 | 💻 Windows Terminal Tab 4 | Watch pods | Start watching for changes |
-| 10 | 🔧 VS Code Terminal 1 | ORAS push | Push v2.0.0 artifact to ACR |
+| 10 | 🔧 VS Code Terminal 2 | ORAS push | Push v2.0.0 artifact to ACR |
 | 11 | 🌐 Browser Tab 2 | Verify ACR | Confirm v2.0.0 tag appeared |
 | 12 | 🔧 VS Code Editor | Edit helmrelease.yaml | Change tag from v1.0.0 to v2.0.0 in helmrelease.yaml |
-| 13 | 🔧 VS Code Terminal 2 | Git commands | Add, commit, push changes |
+| 13 | 🔧 VS Code Terminal 3 | Git commands | Add, commit, push changes |
 | 14 | 💻 Windows Terminal Tab 4 | Observe GitOps | Watch pod rollout (~90 seconds) |
 | 15 | 💻 Windows Terminal Tab 5 | Check version | Verify new v2.0.0 version |
 | 16 | 🌐 Browser Tab 4 | Test Open WebUI | Interact with v2.0.0 model |
@@ -134,7 +142,11 @@ git commit -m "Upgrade Foundry Local GPU model to v2.0.0"
 git push origin main
 ```
 
-- [ ] Now let's watch the pods and see GitOps in action: GitOps detects the change, the old pod terminates, a new pod starts, it downloads the v2.0.0 model - this takes about 90 seconds - and then it becomes ready.
+- [ ] Now let's watch the pods and see GitOps in action...
+
+**[PAUSE RECORDING - Resume when new pod is Running and Ready]**
+
+- [ ] As we can see, the GitOps operator detected the change, the old pod terminated, a new pod started, downloaded the v2.0.0 model, and now it's ready. This whole process took about 90 seconds.
 
 ## Verification
 
