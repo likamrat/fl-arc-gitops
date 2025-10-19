@@ -11,7 +11,7 @@
 | Opening Slide | Introduction | Architecture diagram showing GitOps flow for AI model deployments |
 | Closing Slide | Summary | Same architecture diagram (display during closing remarks) |
 
-![PowerPoint Diagram](img/diagram_1.png)
+![PowerPoint Diagram](img/diagram/diagram_1.png)
 
 ### 💻 Windows Terminal Tabs Setup
 
