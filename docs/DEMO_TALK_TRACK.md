@@ -10,10 +10,9 @@
 |------------|---------|-----------|----------------------|
 | Tab&nbsp;1 | Get Pods | `~` | `kubectl get pods -n foundry-system` |
 | Tab&nbsp;2 | Model List | `~` | `kubectl exec -it -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry model list"` |
-| Tab&nbsp;3 | Cache List | `~` | `kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list \| tail -n +3 \| sed 's/Model was not found in catalog//' \| awk '{print \$NF}'"` |
-| Tab&nbsp;4 | Check Logs (v1.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
-| Tab&nbsp;5 | Watch Pods | `~` | `kubectl get pods -n foundry-system -w` |
-| Tab&nbsp;6 | Check Logs (v2.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
+| Tab&nbsp;3 | Cache & Version Check (v1.0.0) | `~` | `kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list \| tail -n +3 \| sed 's/Model was not found in catalog//' \| awk '{print \$NF}'" && echo "" && kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
+| Tab&nbsp;4 | Watch Pods | `~` | `kubectl get pods -n foundry-system -w` |
+| Tab&nbsp;5 | Check Version (v2.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
 
 ### 🔧 VS Code Setup
 
@@ -44,17 +43,16 @@
 | 4 | 🔧 VS Code Editor | Show helmrelease.yaml | View v1.0.0 tag reference on line 36 |
 | 5 | 💻 Windows Terminal Tab 1 | Get pods | Check current running pods |
 | 6 | 💻 Windows Terminal Tab 2 | Model list | Show available models in Foundry |
-| 7 | 💻 Windows Terminal Tab 3 | Cache list | Show cached model |
-| 8 | 💻 Windows Terminal Tab 4 | Check logs (v1.0.0) | Verify current version |
-| 9 | 🌐 Browser Tab 4 | Test Open WebUI | Interact with v1.0.0 model |
-| 10 | 💻 Windows Terminal Tab 5 | Watch pods | Start watching for changes |
-| 11 | 🔧 VS Code Terminal 1 | ORAS push | Push v2.0.0 artifact to ACR |
-| 12 | 🌐 Browser Tab 2 | Verify ACR | Confirm v2.0.0 tag appeared |
-| 13 | 🔧 VS Code Editor | Edit helmrelease.yaml | Change tag from v1.0.0 to v2.0.0 in helmrelease.yaml |
-| 14 | 🔧 VS Code Terminal 2 | Git commands | Add, commit, push changes |
-| 15 | 💻 Windows Terminal Tab 5 | Observe GitOps | Watch pod rollout (~90 seconds) |
-| 16 | 💻 Windows Terminal Tab 6 | Check logs (v2.0.0) | Verify new version |
-| 17 | 🌐 Browser Tab 4 | Test Open WebUI | Interact with v2.0.0 model |
+| 7 | 💻 Windows Terminal Tab 3 | Cache & version check | Show cached model and verify v1.0.0 |
+| 8 | 🌐 Browser Tab 4 | Test Open WebUI | Interact with v1.0.0 model |
+| 9 | 💻 Windows Terminal Tab 4 | Watch pods | Start watching for changes |
+| 10 | 🔧 VS Code Terminal 1 | ORAS push | Push v2.0.0 artifact to ACR |
+| 11 | 🌐 Browser Tab 2 | Verify ACR | Confirm v2.0.0 tag appeared |
+| 12 | 🔧 VS Code Editor | Edit helmrelease.yaml | Change tag from v1.0.0 to v2.0.0 in helmrelease.yaml |
+| 13 | 🔧 VS Code Terminal 2 | Git commands | Add, commit, push changes |
+| 14 | 💻 Windows Terminal Tab 4 | Observe GitOps | Watch pod rollout (~90 seconds) |
+| 15 | 💻 Windows Terminal Tab 5 | Check version | Verify new v2.0.0 version |
+| 16 | 🌐 Browser Tab 4 | Test Open WebUI | Interact with v2.0.0 model |
 
 ### ✅ Pre-Flight Checklist
 
@@ -91,25 +89,19 @@ kubectl get pods -n foundry-system
 
 - [ ] We can see two pods here - the Foundry Local pod running our AI model, and the Open WebUI frontend.
 
-- [ ] Now let's exec into the Foundry Local pod and see what models are available:
+- [ ] Now let's exec into the Foundry Local pod and see what models are available. We can see there's no Llama model in the catalog - that's because this is our custom bring-your-own model:
 
 ```bash
 kubectl exec -it -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry model list"
 ```
 
-- [ ] Let's also check which model is cached:
+- [ ] Now let's check which model is cached and confirm the deployed version of the custom Llama model:
 
 ```bash
-kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list | tail -n +3 | sed 's/Model was not found in catalog//' | awk '{print \$NF}'"
+kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list | tail -n +3 | sed 's/Model was not found in catalog//' | awk '{print \$NF}'" && echo "" && kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"
 ```
 
-- [ ] Now let's confirm the deployed version from the pod logs:
-
-```bash
-kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"
-```
-
-- [ ] As you can see, we're running v1.0.0.
+- [ ] As you can see, we have the model cached and we're running v1.0.0.
 
 - [ ] Let me open Open WebUI and interact with the Llama CUDA model to show it's working...
 
