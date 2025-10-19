@@ -41,6 +41,7 @@ bash scripts/setup/gitops-config.sh
 ## 📚 Documentation
 
 - **[DEMO_FLOW.md](docs/DEMO_FLOW.md)** - Step-by-step demo workflow (v1.0.0 → v2.0.0)
+- **[DEMO_TALK_TRACK.md](docs/DEMO_TALK_TRACK.md)** - Quick reference commands for demos
 - **[GITOPS_FLOW_SUMMARY.md](docs/GITOPS_FLOW_SUMMARY.md)** - GitOps architecture and flow
 - **[CLEANUP_GUIDE.md](docs/CLEANUP_GUIDE.md)** - Cleanup modes, usage examples, and troubleshooting
 - **[GPU_OPERATOR_INSTALLATION.md](docs/GPU_OPERATOR_INSTALLATION.md)** - GPU operator setup guide
