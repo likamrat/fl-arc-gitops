@@ -6,14 +6,14 @@
 
 > **Note:** All kubectl commands run in Windows Terminal tabs
 
-| Tab | Purpose | Directory | Commands Ready to Run |
-|-----|---------|-----------|----------------------|
-| Tab 1 | Get Pods | `~` | `kubectl get pods -n foundry-system` |
-| Tab 2 | Model List | `~` | `kubectl exec -it -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry model list"` |
-| Tab 3 | Cache List | `~` | `kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list | tail -n +3 | sed 's/Model was not found in catalog//' | awk '{print \$NF}'"` |
-| Tab 4 | Check Logs (v1.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"` |
-| Tab 5 | Watch Pods | `~` | `kubectl get pods -n foundry-system -w` |
-| Tab 6 | Check Logs (v2.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"` |
+| Tab&nbsp;# | Purpose | Directory | Commands Ready to Run |
+|------------|---------|-----------|----------------------|
+| Tab&nbsp;1 | Get Pods | `~` | `kubectl get pods -n foundry-system` |
+| Tab&nbsp;2 | Model List | `~` | `kubectl exec -it -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry model list"` |
+| Tab&nbsp;3 | Cache List | `~` | `kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list | tail -n +3 | sed 's/Model was not found in catalog//' | awk '{print \$NF}'"` |
+| Tab&nbsp;4 | Check Logs (v1.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"` |
+| Tab&nbsp;5 | Watch Pods | `~` | `kubectl get pods -n foundry-system -w` |
+| Tab&nbsp;6 | Check Logs (v2.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"` |
 
 ### 🔧 VS Code Setup
 
@@ -58,19 +58,19 @@
 
 ### ✅ Pre-Flight Checklist
 
-- [ ] Verify system is at v1.0.0 baseline
-- [ ] All Windows Terminal tabs open and positioned (run `cd \` in each tab to be in `~`)
-- [ ] VS Code open with `helmrelease.yaml` visible and terminals in `~/repos/fl-arc-gitops`
-- [ ] All browser tabs loaded and positioned
-- [ ] Architecture diagram ready to show
-- [ ] Test Open WebUI connection before starting
+- Verify system is at v1.0.0 baseline
+- All Windows Terminal tabs open and positioned (run `cd \` in each tab to be in `~`)
+- VS Code open with `helmrelease.yaml` visible and terminals in `~/repos/fl-arc-gitops`
+- All browser tabs loaded and positioned
+- Architecture diagram ready to show
+- Test Open WebUI connection before starting
 
 ---
 
 ## Opening
 
 - [ ] Hi everyone! Today I'm going to show you how to use GitOps to manage AI model deployments on Arc-enabled Kubernetes with Foundry Local.
-- [ ] We'll walk through a complete upgrade workflow - going from version 1.0.0 to version 2.0.0 of a GPU-accelerated Llama model running in Foundry Local on Kubernetes.
+- [ ] We'll walk through a complete upgrade workflow - going from version 1.0.0 to version 2.0.0 of a GPU-accelerated Llama model. This is a bring-your-own-model scenario - imagine a user already has a custom model running with Foundry Local running in Kubernetes, they fine-tuned it, and now wants to push the new version using GitOps.
 - [ ] The key thing here is that we never touch the cluster directly. Everything is declarative through Git, and GitOps handles the automation.
 - [ ] Let's get started by looking at the architecture diagram.
 
