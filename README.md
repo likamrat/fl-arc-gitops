@@ -41,7 +41,7 @@ bash scripts/setup/gitops-config.sh
 ## 📚 Documentation
 
 - **[DEMO_FLOW.md](docs/DEMO_FLOW.md)** - Step-by-step demo workflow (v1.0.0 → v2.0.0)
-- **[DEMO_TALK_TRACK.md](docs/DEMO_TALK_TRACK.md)** - Quick reference commands for demos
+- **[DEMO_TALK_TRACK.md](docs/DEMO_TALK_TRACK.md)** - Complete demo presentation script with 36 talking points
 - **[GITOPS_FLOW_SUMMARY.md](docs/GITOPS_FLOW_SUMMARY.md)** - GitOps architecture and flow
 - **[CLEANUP_GUIDE.md](docs/CLEANUP_GUIDE.md)** - Cleanup modes, usage examples, and troubleshooting
 - **[GPU_OPERATOR_INSTALLATION.md](docs/GPU_OPERATOR_INSTALLATION.md)** - GPU operator setup guide
@@ -63,7 +63,8 @@ bash scripts/setup/gitops-config.sh
 │   │   ├── flux-setup.sh             # Flux CD setup helper
 │   │   └── gpu-operator-install.sh   # GPU operator installation
 │   ├── demo/                         # Demo and cleanup scripts
-│   │   └── demo-cleanup.sh           # Environment cleanup (full/soft modes)
+│   │   ├── demo-cleanup.sh           # Environment cleanup (full/soft modes)
+│   │   └── cleanup-openwebui-chats.sh # Open WebUI chat history cleanup
 │   ├── utils/                        # Utility scripts
 │   │   ├── oras-login.sh             # ORAS authentication helper
 │   │   ├── gpu-test.sh               # GPU testing utilities

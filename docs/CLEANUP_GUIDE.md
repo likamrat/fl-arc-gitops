@@ -22,6 +22,7 @@ The cleanup script provides two modes to reset your environment:
 
 #### What it Does
 
+- ✅ Cleans up Open WebUI chat history
 - ✅ Deletes Flux GitOps configuration from Arc cluster
 - ✅ Removes Foundry Local application (Helm release, pods, services)
 - ✅ Deletes `foundry-system` namespace
@@ -57,6 +58,7 @@ You need to redeploy GitOps configuration:
 
 #### What it Does
 
+- ✅ Cleans up Open WebUI chat history
 - ✅ Removes all OCI artifacts from ACR **except v1.0.0**
 - ✅ Reverts Git repository code to v1.0.0
 - ✅ Commits and pushes changes to Git
@@ -293,9 +295,47 @@ kubectl logs -n flux-system -l app=source-controller
 
 ---
 
+## 🧹 Standalone Open WebUI Chat Cleanup
+
+If you only need to clean up Open WebUI chat history without affecting other resources, use the standalone script:
+
+```bash
+./scripts/demo/cleanup-openwebui-chats.sh
+```
+
+This script:
+- ✅ Finds the Open WebUI pod automatically
+- ✅ Deletes all chat conversations from the SQLite database
+- ✅ Shows count of deleted chats
+- ✅ Reclaims disk space (VACUUM operation)
+- ✅ Doesn't affect models, configurations, or deployments
+
+**Use this when:**
+- Preparing for a demo recording
+- Clearing chat history between demo runs
+- Testing chat functionality with a clean slate
+- You want to keep the deployed model but clear conversations
+
+**Example output:**
+```
+🗑️  Cleaning up Open WebUI chat history...
+📍 Found Open WebUI pod: foundry-gpu-oras-foundry-local-openwebui-5c9cdc9b8f-wght6
+🔧 Deleting all chats from database...
+Found 14 chats
+Deleted 14 chats
+✅ Chat history cleanup complete!
+
+💡 Tip: Refresh your Open WebUI browser tab to see the changes
+```
+
+**Note**: This script is automatically run as **Step 0** in both `--full` and `--soft` cleanup modes of `demo-cleanup.sh`.
+
+---
+
 ## 📚 Related Documentation
 
 - **[README.md](../README.md)** - Main repository documentation
+- **[DEMO_TALK_TRACK.md](./DEMO_TALK_TRACK.md)** - Complete demo presentation script with 36 talking points
 - **[DEMO_FLOW.md](./DEMO_FLOW.md)** - Step-by-step demo workflow
 - **[GITOPS_FLOW_SUMMARY.md](./GITOPS_FLOW_SUMMARY.md)** - GitOps architecture and flow
 - **[GPU_OPERATOR_INSTALLATION.md](./GPU_OPERATOR_INSTALLATION.md)** - GPU operator setup guide

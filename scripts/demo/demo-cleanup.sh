@@ -9,6 +9,7 @@
 # MODES:
 #
 # FULL CLEANUP (default):
+# - Cleans up Open WebUI chat history
 # - Deletes Flux GitOps configuration from Arc cluster
 # - Removes Foundry Local application resources (Helm chart, pods, etc.)
 # - Deletes foundry-system namespace
@@ -19,6 +20,7 @@
 # - Shows final state comparison
 #
 # SOFT CLEANUP (--soft):
+# - Cleans up Open WebUI chat history
 # - Removes ALL OCI artifacts from ACR EXCEPT v0.1.0
 # - Reverts Git repository code to v0.1.0
 # - Commits and pushes changes to Git
@@ -189,6 +191,56 @@ fi
 # SOFT MODE: GitOps-based Rollback
 ################################################################################
 if [[ "${SOFT_MODE}" == "true" ]]; then
+  
+  # Step 0: Clean up Open WebUI chat history
+  echo -e "${BLUE}Step 0: Cleaning up Open WebUI chat history...${NC}"
+  
+  # Get the Open WebUI pod name
+  OPENWEBUI_POD=$(kubectl get pod -n ${NAMESPACE} -l app.kubernetes.io/component=open-webui -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+  
+  if [[ -z "${OPENWEBUI_POD}" ]]; then
+    echo -e "${YELLOW}⚠ Could not find Open WebUI pod${NC}"
+  else
+    if [[ "${DRY_RUN}" == "true" ]]; then
+      echo -e "${YELLOW}[DRY RUN]${NC} Would delete all chats from Open WebUI database"
+    else
+      echo "  Found Open WebUI pod: ${OPENWEBUI_POD}"
+      CHAT_DELETE_OUTPUT=$(kubectl exec -n ${NAMESPACE} ${OPENWEBUI_POD} -- python3 -c '
+import sqlite3
+import os
+
+db_path = "/app/backend/data/webui.db"
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
+
+# Get count before deletion
+cursor.execute("SELECT COUNT(*) FROM chat")
+count_before = cursor.fetchone()[0]
+
+if count_before > 0:
+    # Delete all chats
+    cursor.execute("DELETE FROM chat")
+    conn.commit()
+    
+    # Vacuum to reclaim space
+    cursor.execute("VACUUM")
+    conn.commit()
+    
+    print(f"{count_before}")
+else:
+    print("0")
+
+conn.close()
+' 2>/dev/null)
+      
+      if [[ "${CHAT_DELETE_OUTPUT}" == "0" ]]; then
+        echo -e "${GREEN}✓ No chats to delete${NC}"
+      else
+        echo -e "${GREEN}✓ Deleted ${CHAT_DELETE_OUTPUT} chat(s)${NC}"
+      fi
+    fi
+  fi
+  echo ""
   
   # Step 1: Remove all OCI artifacts except v0.1.0
   echo -e "${BLUE}Step 1: Removing OCI artifacts (keeping only ${VERSION_TO_REVERT})...${NC}"
@@ -479,6 +531,56 @@ fi
 ################################################################################
 # FULL MODE: Complete Reset
 ################################################################################
+
+# Step 0: Clean up Open WebUI chat history
+echo -e "${BLUE}Step 0: Cleaning up Open WebUI chat history...${NC}"
+
+# Get the Open WebUI pod name
+OPENWEBUI_POD=$(kubectl get pod -n ${NAMESPACE} -l app.kubernetes.io/component=open-webui -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+
+if [[ -z "${OPENWEBUI_POD}" ]]; then
+  echo -e "${YELLOW}⚠ Could not find Open WebUI pod (may already be deleted)${NC}"
+else
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    echo -e "${YELLOW}[DRY RUN]${NC} Would delete all chats from Open WebUI database"
+  else
+    echo "  Found Open WebUI pod: ${OPENWEBUI_POD}"
+    CHAT_DELETE_OUTPUT=$(kubectl exec -n ${NAMESPACE} ${OPENWEBUI_POD} -- python3 -c '
+import sqlite3
+import os
+
+db_path = "/app/backend/data/webui.db"
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
+
+# Get count before deletion
+cursor.execute("SELECT COUNT(*) FROM chat")
+count_before = cursor.fetchone()[0]
+
+if count_before > 0:
+    # Delete all chats
+    cursor.execute("DELETE FROM chat")
+    conn.commit()
+    
+    # Vacuum to reclaim space
+    cursor.execute("VACUUM")
+    conn.commit()
+    
+    print(f"{count_before}")
+else:
+    print("0")
+
+conn.close()
+' 2>/dev/null)
+    
+    if [[ "${CHAT_DELETE_OUTPUT}" == "0" ]]; then
+      echo -e "${GREEN}✓ No chats to delete${NC}"
+    else
+      echo -e "${GREEN}✓ Deleted ${CHAT_DELETE_OUTPUT} chat(s)${NC}"
+    fi
+  fi
+fi
+echo ""
 
 # Step 1: Delete Flux GitOps Configuration from Arc
 echo -e "${BLUE}Step 1: Deleting Flux GitOps configuration from Arc cluster...${NC}"
