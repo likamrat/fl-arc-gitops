@@ -149,17 +149,13 @@ kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 
 - [ ] As you can see, we have the model cached and we're running v1.0.0.
 
-- [ ] Let me open Open WebUI and interact with the Llama CUDA model to show it's working...
+- [ ] Let me open the Open WebUI interface and interact with the Llama CUDA model to show it's working...
+
+- [ ] I'll submit a prompt: **"Tell me a joke about AI"**... Ha, that's funny! Okay, let's move on with our demo.
 
 ### 5️⃣ Upgrade to v2.0.0
 
 - [ ] Now let's trigger an upgrade to v2.0.0 and watch GitOps handle it automatically.
-
-- [ ] First, let me start watching the pods so we can see the changes in real-time:
-
-```bash
-kubectl get pods -n foundry-system -w
-```
 
 - [ ] Now I'm going to push the v2.0.0 model artifact to ACR. ORAS, which represents OCI Registry as Storage, lets us store AI models as OCI artifacts in ACR, just like container images. Let's switch to VS Code.
 
@@ -173,6 +169,12 @@ oras push foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda:v2.0.0 \
 - [ ] Let's go back to the Azure portal and verify the new tag appeared in ACR. There it is - we now have both v1.0.0 and v2.0.0.
 
 - [ ] Now I need to update Git to tell the GitOps operator on the Kubernetes cluster about this new version. Let's change the tag from v1.0.0 to v2.0.0 in helmrelease.yaml...
+
+- [ ] Let me start watching the pods so we can see the changes in real-time:
+
+```bash
+kubectl get pods -n foundry-system -w
+```
 
 - [ ] Now, watch this carefully - I have a side-by-side view here: VS Code on the left where I'll push the Git changes, and Windows Terminal on the right with kubectl watch running. Let's see how the GitOps flow instantly reacts when I push to Git...
 
