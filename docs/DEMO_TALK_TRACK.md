@@ -93,7 +93,7 @@
 
 ---
 
-### Opening
+### 1️⃣ Opening
 
 - [ ] Hi everyone! Today I'm going to show you how to use GitOps to manage AI model deployments on Arc-enabled Kubernetes with Foundry Local.
 - [ ] We'll walk through a complete upgrade workflow - going from version 1.0.0 to version 2.0.0 of a GPU-accelerated Llama model. This is a bring-your-own-model scenario - imagine a user already has a custom model running with Foundry Local running in Kubernetes, they fine-tuned it, and now wants to push the new version using GitOps.
@@ -101,14 +101,14 @@
 - [ ] Let's get started by looking at the architecture diagram.
 - [ ] Alright, now that we've seen the architecture, let's see all of this in action!
 
-### Setup
+### 2️⃣ Setup
 
 - [ ] In the Azure portal, we can see our Arc-enabled cluster with GitOps configuration pointing to our GitHub repository. Notice the HelmRelease object here - we'll come back to this.
 - [ ] Still in the portal, let's look at our container registry. Here's the `byo-models-gpu/llama-3.2-1b-cuda` repository with just the v1.0.0 tag right now.
 - [ ] Over in GitHub, this is the repo we just saw referenced in the GitOps config.
 - [ ] And in VS Code, here's the helmrelease.yaml manifest that GitOps is watching. You can see the v1.0.0 tag reference on line 36.
 
-### Current State
+### 3️⃣ Current State
 
 - [ ] Before we upgrade, let's see what's running right now on our Kubernetes cluster.
 
@@ -134,7 +134,7 @@ kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 
 - [ ] Let me open Open WebUI and interact with the Llama CUDA model to show it's working...
 
-### Upgrade to v2.0.0
+### 4️⃣ Upgrade to v2.0.0
 
 - [ ] Now let's trigger an upgrade to v2.0.0 and watch GitOps handle it automatically.
 
@@ -167,11 +167,11 @@ git push origin main
 
 - [ ] See that? The moment I pushed to Git, the GitOps operator detected the change and is now terminating the old pod and creating a new one. This is GitOps in real-time!
 
-**[PAUSE RECORDING - Resume when new pod is Running and Ready]**
+> **PAUSE RECORDING - Resume when new pod is Running and Ready**
 
 - [ ] Perfect! The new pod is up and running with v2.0.0.
 
-### Verification
+### 5️⃣ Verification
 
 - [ ] Let's verify the upgrade worked:
 
@@ -189,7 +189,7 @@ kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 
 - [ ] See that? The GPU usage spikes immediately! This shows our model is actually leveraging the GPU acceleration.
 
-### Closing
+### 6️⃣ Closing
 
 > **Show closing slide with architecture diagram**
 
