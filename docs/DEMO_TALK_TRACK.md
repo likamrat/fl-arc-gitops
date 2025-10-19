@@ -4,6 +4,8 @@
 
 ### 📊 PowerPoint Setup
 
+> **File:** `docs/pptx/architecture.pptx`
+
 | Slide | Purpose | Content |
 |-------|---------|---------|
 | Opening Slide | Introduction | Architecture diagram showing GitOps flow for AI model deployments |
