@@ -98,20 +98,19 @@
 
 ### 1️⃣ Opening
 
-- [ ] Hi everyone! Today I'm going to show you how to use GitOps to manage AI model deployments on Arc-enabled Kubernetes with Foundry Local.
-- [ ] We'll walk through a complete upgrade workflow - going from version 1.0.0 to version 2.0.0 of a GPU-accelerated Llama model. This is a bring-your-own-model scenario - imagine a user already has a custom model running with Foundry Local running in Kubernetes, they fine-tuned it, and now wants to push the new version using GitOps.
-- [ ] The key thing here is that we never touch the cluster directly. Everything is declarative through Git, and GitOps handles the automation.
+- [x] Hi everyone! Today I'm going to show you how to use GitOps to manage AI model deployments on Arc-enabled Kubernetes with Foundry Local.
+- [x] We'll walk through a complete upgrade workflow - going from version 1.0.0 to version 2.0.0 of a GPU-accelerated Llama model. This is a bring-your-own-model scenario - imagine a user already has a custom model running with Foundry Local running in Kubernetes, they fine-tuned it, and now wants to push the new version using GitOps.
+- [x] The key thing here is that we never touch the cluster directly. Everything is declarative through Git, and GitOps handles the automation.
 
 ### 2️⃣ Architecture
 
-- [ ] Let's get started by looking at the architecture diagram.
-- [ ] First, we have a user interacting with the currently deployed bring-your-own model. This model is running in Kubernetes based on the existing v1.0.0 AI OCI image.
+- [x] Let's get started by looking at the architecture diagram.
+- [x] First, we have a user interacting with the currently deployed bring-your-own model. This model is running using Foundry Local in Kubernetes and it's based on the existing v1.0.0 AI OCI image.
   > **Click**
-- [ ] Behind the scenes, we have the GitOps Operator with a GitOps configuration that's constantly listening for repository updates. And this is all made possible because Arc-enabled Kubernetes makes GitOps configuration incredibly easy to set up.
-- [ ] The Helm release manifest is currently pointing to the existing v1.0.0 OCI image tag.
+- [x] Behind the scenes, we have the GitOps Operator with a GitOps configuration that's constantly listening for repository updates. And this is all made possible because Arc-enabled Kubernetes makes GitOps configuration incredibly easy to set up.
+- [x] At the beginning of the flow, the Helm release manifest is pointing to the existing v1.0.0 OCI image tag that is located in Azure Container Registry.
   > **Click**
-- [ ] Now here's where it gets interesting - when a user or CI pipeline pushes a new v2.0.0 AI OCI image to Azure Container Registry, they also update the helmrelease.yaml file in the repository with the new tag.
-- [ ] Both actions happen together.
+- [x] Now here's where it gets interesting - when a user or CI pipeline pushes a new v2.0.0 AI OCI image to Azure Container Registry, they also update the helmrelease.yaml file in the repository with the new tag. Both actions happen together.
   > **Click**
 - [ ] The GitOps Operator, using the GitOps configuration, picks up this update from the repository and automatically initiates a rolling upgrade of the pod - which includes pulling down the new v2.0.0 model files.
   > **Click**
