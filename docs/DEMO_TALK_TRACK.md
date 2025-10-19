@@ -26,7 +26,7 @@
 | Tab&nbsp;5 | Check Version (v2.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
 | Tab&nbsp;6 | GPU Monitor (btop) | `~` | `ssh <kubernetes-node>` then `btop` (for GPU usage monitoring) |
 
-![Windows Terminal Tabs](img/termainl_tabs.png)
+![Windows Terminal Tabs](img/interface/termainl_tabs.png)
 
 ### 🔧 VS Code Setup
 
@@ -39,7 +39,7 @@
 | Terminal 3 | Git Commands | `~/repos/fl-arc-gitops` | `git add apps/foundry-gpu-oras/helmrelease.yaml`<br>`git commit -m "Upgrade Foundry Local GPU model to v2.0.0"`<br>`git push origin main` |
 | Editor Tab | HelmRelease File | `apps/foundry-gpu-oras/helmrelease.yaml` | Open and ready - Change line 36: `v1.0.0` → `v2.0.0` |
 
-![VS Code Setup](img/vscode.png)
+![VS Code Setup](img/interface/vscode.png)
 
 ### 🌐 Browser Tabs
 
@@ -50,8 +50,8 @@
 | Edge | Tab 3 | GitHub - fl-arc-gitops repository |
 | Edge | Tab 4 | Open WebUI - Model interaction |
 
-![Browser Tabs](img/browser_tabs.png)
-![Browser Start](img/browser_start.png)
+![Browser Tabs](img/interface/browser_tabs.png)
+![Browser Start](img/interface/browser_start.png)
 
 ### 🎯 Demo Flow Overview
 
@@ -105,12 +105,17 @@
 
 - [ ] Let's get started by looking at the architecture diagram.
 - [ ] First, we have a user interacting with the currently deployed bring-your-own model. This model is running in Kubernetes based on the existing v1.0.0 AI OCI image.
+  > **Click**
 - [ ] Behind the scenes, we have the GitOps Operator with a GitOps configuration that's constantly listening for repository updates. And this is all made possible because Arc-enabled Kubernetes makes GitOps configuration incredibly easy to set up.
 - [ ] The Helm release manifest is currently pointing to the existing v1.0.0 OCI image tag.
+  > **Click**
 - [ ] Now here's where it gets interesting - when a user or CI pipeline pushes a new v2.0.0 AI OCI image to Azure Container Registry, they also update the helmrelease.yaml file in the repository with the new tag.
 - [ ] Both actions happen together.
+  > **Click**
 - [ ] The GitOps Operator, using the GitOps configuration, picks up this update from the repository and automatically initiates a rolling upgrade of the pod - which includes pulling down the new v2.0.0 model files.
+  > **Click**
 - [ ] And finally, the user can now interact with the newly deployed bring-your-own model based on the new AI OCI image - all without any manual intervention on the cluster.
+  > **Click**
 - [ ] Alright, now that we've seen the architecture, let's see all of this in action!
 
 ### 3️⃣ Setup
