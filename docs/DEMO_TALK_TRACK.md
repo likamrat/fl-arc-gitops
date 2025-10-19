@@ -73,27 +73,27 @@
 
 ---
 
-# 🎤 Demo Talk Track
+## 🎤 Demo Talk Track
 
 > **The demo starts here. Follow the checkboxes below for the complete narrative.**
 
 ---
 
-## Opening
+### Opening
 
 - [ ] Hi everyone! Today I'm going to show you how to use GitOps to manage AI model deployments on Arc-enabled Kubernetes with Foundry Local.
 - [ ] We'll walk through a complete upgrade workflow - going from version 1.0.0 to version 2.0.0 of a GPU-accelerated Llama model. This is a bring-your-own-model scenario - imagine a user already has a custom model running with Foundry Local running in Kubernetes, they fine-tuned it, and now wants to push the new version using GitOps.
 - [ ] The key thing here is that we never touch the cluster directly. Everything is declarative through Git, and GitOps handles the automation.
 - [ ] Let's get started by looking at the architecture diagram.
 
-## Setup
+### Setup
 
 - [ ] In the Azure portal, we can see our Arc-enabled cluster with GitOps configuration pointing to our GitHub repository. Notice the HelmRelease object here - we'll come back to this.
 - [ ] Still in the portal, let's look at our container registry. Here's the `byo-models-gpu/llama-3.2-1b-cuda` repository with just the v1.0.0 tag right now.
 - [ ] Over in GitHub, this is the repo we just saw referenced in the GitOps config.
 - [ ] And in VS Code, here's the helmrelease.yaml manifest that GitOps is watching. You can see the v1.0.0 tag reference on line 36.
 
-## Current State
+### Current State
 
 - [ ] Before we upgrade, let's see what's running right now on our Kubernetes cluster.
 
@@ -119,7 +119,7 @@ kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 
 - [ ] Let me open Open WebUI and interact with the Llama CUDA model to show it's working...
 
-## Upgrade to v2.0.0
+### Upgrade to v2.0.0
 
 - [ ] Now let's trigger an upgrade to v2.0.0 and watch GitOps handle it automatically.
 
@@ -154,7 +154,7 @@ git push origin main
 
 - [ ] As we can see, the GitOps operator detected the change, the old pod terminated, a new pod started, downloaded the v2.0.0 model, and now it's ready. This whole process took about 90 seconds.
 
-## Verification
+### Verification
 
 - [ ] Let's verify the upgrade worked:
 
@@ -166,7 +166,7 @@ kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 
 - [ ] And let's test it in Open WebUI to confirm the new model is working...
 
-## Closing
+### Closing
 
 - [ ] And that's it! We just demonstrated a complete GitOps workflow for upgrading an AI model on Kubernetes. The key takeaway here is that we never touched the cluster directly - we just pushed a new artifact to the registry and updated Git. GitOps handled the entire deployment automatically.
 - [ ] This same pattern works for any model upgrade, rollback, or configuration change. Git is the single source of truth, and the cluster converges to match it.
