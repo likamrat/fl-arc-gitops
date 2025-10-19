@@ -1,4 +1,4 @@
-# Demo Talk Track
+# Demo Flight Check and Talk Track
 
 ## 🎬 Flight Check
 
@@ -70,6 +70,12 @@
 - All browser tabs loaded and positioned
 - Architecture diagram ready to show
 - Test Open WebUI connection before starting
+
+---
+
+# 🎤 Demo Talk Track
+
+> **The demo starts here. Follow the checkboxes below for the complete narrative.**
 
 ---
 
