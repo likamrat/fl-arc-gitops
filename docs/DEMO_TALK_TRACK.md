@@ -8,12 +8,12 @@
 
 | Tab | Purpose | Directory | Commands Ready to Run |
 |-----|---------|-----------|----------------------|
-| Tab 1 | Get Pods | `~/repos/fl-arc-gitops` | `kubectl get pods -n foundry-system` |
-| Tab 2 | Model List | `~/repos/fl-arc-gitops` | `kubectl exec -it -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry model list"` |
-| Tab 3 | Cache List | `~/repos/fl-arc-gitops` | `kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list | tail -n +3 | sed 's/Model was not found in catalog//' | awk '{print \$NF}'"` |
-| Tab 4 | Check Logs (v1.0.0) | `~/repos/fl-arc-gitops` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"` |
-| Tab 5 | Watch Pods | `~/repos/fl-arc-gitops` | `kubectl get pods -n foundry-system -w` |
-| Tab 6 | Check Logs (v2.0.0) | `~/repos/fl-arc-gitops` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"` |
+| Tab 1 | Get Pods | `~` | `kubectl get pods -n foundry-system` |
+| Tab 2 | Model List | `~` | `kubectl exec -it -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry model list"` |
+| Tab 3 | Cache List | `~` | `kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list | tail -n +3 | sed 's/Model was not found in catalog//' | awk '{print \$NF}'"` |
+| Tab 4 | Check Logs (v1.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"` |
+| Tab 5 | Watch Pods | `~` | `kubectl get pods -n foundry-system -w` |
+| Tab 6 | Check Logs (v2.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"` |
 
 ### 🔧 VS Code Setup
 
@@ -21,18 +21,18 @@
 
 | Terminal/Editor | Purpose | Directory/File | Commands Ready to Run |
 |-----------------|---------|----------------|----------------------|
-| Terminal 1 | ORAS Push | `apps/foundry-gpu-oras/models` | `oras push foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda:v2.0.0 --artifact-type "foundry/models" models.tar.gz:application/gzip` |
-| Terminal 2 | Git Commands | Root directory | `git add apps/foundry-gpu-oras/helmrelease.yaml`<br>`git commit -m "Upgrade Foundry Local GPU model to v2.0.0"`<br>`git push origin main` |
+| Terminal 1 | ORAS Push | `~/repos/fl-arc-gitops` | `cd apps/foundry-gpu-oras/models && oras push foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda:v2.0.0 --artifact-type "foundry/models" models.tar.gz:application/gzip` |
+| Terminal 2 | Git Commands | `~/repos/fl-arc-gitops` | `git add apps/foundry-gpu-oras/helmrelease.yaml`<br>`git commit -m "Upgrade Foundry Local GPU model to v2.0.0"`<br>`git push origin main` |
 | Editor Tab | HelmRelease File | `apps/foundry-gpu-oras/helmrelease.yaml` | Open and ready - Change line 36: `v1.0.0` → `v2.0.0` |
 
 ### 🌐 Browser Tabs
 
 | Browser | Tab | URL/Purpose |
 |---------|-----|-------------|
-| Chrome/Edge | Tab 1 | Azure Portal - Arc-enabled cluster (GitOps configuration) |
-| Chrome/Edge | Tab 2 | Azure Portal - Container Registry (ACR with `byo-models-gpu/llama-3.2-1b-cuda` repo) |
-| Chrome/Edge | Tab 3 | GitHub - fl-arc-gitops repository |
-| Chrome/Edge | Tab 4 | Open WebUI - Model interaction |
+| Edge | Tab 1 | Azure Portal - Arc-enabled cluster (GitOps configuration) |
+| Edge | Tab 2 | Azure Portal - Container Registry (ACR with `byo-models-gpu/llama-3.2-1b-cuda` repo) |
+| Edge | Tab 3 | GitHub - fl-arc-gitops repository |
+| Edge | Tab 4 | Open WebUI - Model interaction |
 
 ### 🎯 Demo Flow Overview
 
@@ -59,8 +59,8 @@
 ### ✅ Pre-Flight Checklist
 
 - [ ] Verify system is at v1.0.0 baseline
-- [ ] All Windows Terminal tabs open and positioned
-- [ ] VS Code open with `helmrelease.yaml` visible
+- [ ] All Windows Terminal tabs open and positioned (run `cd \` in each tab to be in `~`)
+- [ ] VS Code open with `helmrelease.yaml` visible and terminals in `~/repos/fl-arc-gitops`
 - [ ] All browser tabs loaded and positioned
 - [ ] Architecture diagram ready to show
 - [ ] Test Open WebUI connection before starting
