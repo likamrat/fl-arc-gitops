@@ -86,6 +86,7 @@
 - Architecture diagram ready to show
 - Delete existing chats in Open WebUI
 - Test Open WebUI connection before starting
+- Close all messaging apps and Outlook
 
 ---
 
@@ -202,7 +203,9 @@ kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 
 - [ ] And let's test it in Open WebUI to confirm the new model is working...
 
-- [ ] Now let me show you something really cool - let's see the GPU in action. I have a side-by-side layout here: Open WebUI on the left, and on the right, I'm SSH'd into our Kubernetes node running btop to monitor the GPU.
+- [ ] Now let me show you something really cool - let's see the GPU in action.
+
+- [ ] I have a side-by-side layout here: Open WebUI on the left, and on the right, I'm SSH'd into our Kubernetes node running btop to monitor the GPU.
 
 - [ ] I'll start by submitting a prompt: **"Give me ideas for AI research"**... Watch what happens to the GPU usage in btop... And look, Open WebUI is auto-suggesting follow-up questions - I can click those as well.
 
