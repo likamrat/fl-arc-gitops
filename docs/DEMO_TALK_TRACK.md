@@ -144,7 +144,7 @@ kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 kubectl get pods -n foundry-system -w
 ```
 
-- [ ] Now I'm going to push the v2.0.0 model artifact to ACR. ORAS (OCI Registry as Storage) lets us store AI models as OCI artifacts in ACR, just like container images. Let's switch to VS Code.
+- [ ] Now I'm going to push the v2.0.0 model artifact to ACR. ORAS, which represents OCI Registry as Storage, lets us store AI models as OCI artifacts in ACR, just like container images. Let's switch to VS Code.
 
 ```bash
 cd apps/foundry-gpu-oras/models
