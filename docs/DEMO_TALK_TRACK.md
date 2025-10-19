@@ -11,7 +11,7 @@
 | Opening Slide | Introduction | Architecture diagram showing GitOps flow for AI model deployments |
 | Closing Slide | Summary | Same architecture diagram (display during closing remarks) |
 
-![PowerPoint Diagram](img/diagram_start.png)
+![PowerPoint Diagram](img/diagram_1.png)
 
 ### 💻 Windows Terminal Tabs Setup
 
@@ -100,17 +100,27 @@
 - [ ] Hi everyone! Today I'm going to show you how to use GitOps to manage AI model deployments on Arc-enabled Kubernetes with Foundry Local.
 - [ ] We'll walk through a complete upgrade workflow - going from version 1.0.0 to version 2.0.0 of a GPU-accelerated Llama model. This is a bring-your-own-model scenario - imagine a user already has a custom model running with Foundry Local running in Kubernetes, they fine-tuned it, and now wants to push the new version using GitOps.
 - [ ] The key thing here is that we never touch the cluster directly. Everything is declarative through Git, and GitOps handles the automation.
+
+### 2️⃣ Architecture
+
 - [ ] Let's get started by looking at the architecture diagram.
+- [ ] First, we have a user interacting with the currently deployed bring-your-own model. This model is running in Kubernetes based on the existing v1.0.0 AI OCI image.
+- [ ] Behind the scenes, we have the GitOps Operator with a GitOps configuration that's constantly listening for repository updates. And this is all made possible because Arc-enabled Kubernetes makes GitOps configuration incredibly easy to set up.
+- [ ] The Helm release manifest is currently pointing to the existing v1.0.0 OCI image tag.
+- [ ] Now here's where it gets interesting - when a user or CI pipeline pushes a new v2.0.0 AI OCI image to Azure Container Registry, they also update the helmrelease.yaml file in the repository with the new tag.
+- [ ] Both actions happen together.
+- [ ] The GitOps Operator, using the GitOps configuration, picks up this update from the repository and automatically initiates a rolling upgrade of the pod - which includes pulling down the new v2.0.0 model files.
+- [ ] And finally, the user can now interact with the newly deployed bring-your-own model based on the new AI OCI image - all without any manual intervention on the cluster.
 - [ ] Alright, now that we've seen the architecture, let's see all of this in action!
 
-### 2️⃣ Setup
+### 3️⃣ Setup
 
 - [ ] In the Azure portal, we can see our Arc-enabled cluster with GitOps configuration pointing to our GitHub repository. Notice the HelmRelease object here - we'll come back to this.
 - [ ] Still in the portal, let's look at our container registry. Here's the `byo-models-gpu/llama-3.2-1b-cuda` repository with just the v1.0.0 tag right now.
 - [ ] Over in GitHub, this is the repo we just saw referenced in the GitOps config.
 - [ ] And in VS Code, here's the helmrelease.yaml manifest that GitOps is watching. You can see the v1.0.0 tag reference on line 36.
 
-### 3️⃣ Current State
+### 4️⃣ Current State
 
 - [ ] Before we upgrade, let's see what's running right now on our Kubernetes cluster.
 
@@ -136,7 +146,7 @@ kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 
 - [ ] Let me open Open WebUI and interact with the Llama CUDA model to show it's working...
 
-### 4️⃣ Upgrade to v2.0.0
+### 5️⃣ Upgrade to v2.0.0
 
 - [ ] Now let's trigger an upgrade to v2.0.0 and watch GitOps handle it automatically.
 
@@ -173,7 +183,7 @@ git push origin main
 
 - [ ] Perfect! The new pod is up and running with v2.0.0.
 
-### 5️⃣ Verification
+### 6️⃣ Verification
 
 - [ ] Let's verify the upgrade worked:
 
@@ -191,7 +201,7 @@ kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 
 - [ ] See that? The GPU usage spikes immediately! This shows our model is actually leveraging the GPU acceleration.
 
-### 6️⃣ Closing
+### 7️⃣ Closing
 
 > **Show closing slide with architecture diagram**
 
