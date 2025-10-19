@@ -41,7 +41,7 @@ bash scripts/setup/gitops-config.sh
 ## 📚 Documentation
 
 - **[DEMO_FLOW.md](docs/DEMO_FLOW.md)** - Step-by-step demo workflow (v1.0.0 → v2.0.0)
-- **[DEMO_TALK_TRACK.md](docs/DEMO_TALK_TRACK.md)** - Complete demo presentation script with 36 talking points
+- **[DEMO_TALK_TRACK.md](docs/DEMO_TALK_TRACK.md)** - Complete demo presentation script with talking points
 - **[GITOPS_FLOW_SUMMARY.md](docs/GITOPS_FLOW_SUMMARY.md)** - GitOps architecture and flow
 - **[CLEANUP_GUIDE.md](docs/CLEANUP_GUIDE.md)** - Cleanup modes, usage examples, and troubleshooting
 - **[GPU_OPERATOR_INSTALLATION.md](docs/GPU_OPERATOR_INSTALLATION.md)** - GPU operator setup guide
@@ -168,7 +168,7 @@ See [CLEANUP_GUIDE.md](docs/CLEANUP_GUIDE.md) for detailed cleanup options and u
 1. **Manual Git Update Required**
    - ImageUpdateAutomation not configured (needs GitHub PAT)
    - Must manually update Git after OCI push
-   
+
 2. **Aggressive Sync Intervals**
    - 3s/5s intervals are demo-optimized
    - Watch GitHub API rate limits (5000 req/hour)
