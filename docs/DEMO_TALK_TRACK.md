@@ -112,52 +112,58 @@
   > **Click**
 - ✅ Now here's where it gets interesting - when a user or CI pipeline pushes a new v2.0.0 AI OCI image to Azure Container Registry, they also update the helmrelease.yaml file in the repository with the new tag. Both actions happen together.
   > **Click**
-- ⬜ The GitOps Operator, using the GitOps configuration, picks up this update from the repository and automatically initiates a rolling upgrade of the pod - which includes pulling down the new v2.0.0 model files.
+- ✅ The GitOps Operator, using the GitOps configuration, picks up this update from the repository and automatically initiates a rolling upgrade of the pod - which includes pulling down the new v2.0.0 model files.
   > **Click**
-- ⬜ And finally, the user can now interact with the newly deployed bring-your-own model based on the new AI OCI image - all without any manual intervention on the cluster.
+- ✅ And finally, the user can now interact with the newly deployed model that is based on the new AI OCI image - all without any manual intervention on the cluster.
   > **Click**
-- ⬜ Alright, now that we've seen the architecture, let's see all of this in action!
+- ✅ Alright, now that we've seen the architecture, let's see all of this in action!
 
 ### 3️⃣ Setup
 
-- ⬜ In the Azure portal, we can see our Arc-enabled cluster with GitOps configuration pointing to our GitHub repository. Notice the HelmRelease object here - we'll come back to this.
-- ⬜ Still in the portal, let's look at our container registry. Here's the `byo-models-gpu/llama-3.2-1b-cuda` repository with just the v1.0.0 tag right now.
-- ⬜ Over in GitHub, this is the repo we just saw referenced in the GitOps config.
-- ⬜ And in VS Code, here's the helmrelease.yaml manifest that GitOps is watching. You can see the v1.0.0 tag reference on line 36.
+- ✅ In the Azure portal, we can see our Arc-enabled cluster with GitOps configuration pointing to our GitHub repository. Notice the HelmRelease object here - we'll come back to this.
+- ✅ Still in the portal, let's look at our container registry. Here's the `byo-models-gpu/llama-3.2-1b-cuda` repository with just the v1.0.0 tag available at the moment.
+- ✅ Over in GitHub, this is the repo we just saw referenced in the GitOps config.
+- ✅ And in VS Code, here's the helmrelease.yaml manifest that the GitOps operator is watching. You can see the v1.0.0 tag reference here on line 36.
 
 ### 4️⃣ Current State
 
-- ⬜ Before we upgrade, let's see what's running right now on our Kubernetes cluster.
+- ✅ Before we upgrade, let's see what's running right now on our Kubernetes cluster by looking at the pods.
 
 ```bash
 kubectl get pods -n foundry-system
 ```
 
-- ⬜ We can see two pods here - the Foundry Local pod running our AI model, and the Open WebUI frontend.
+- ✅ We can see two pods here - the Foundry Local pod running our AI model, and the Open WebUI frontend.
 
-- ⬜ Now let's exec into the Foundry Local pod and see what models are available. We can see there's no Llama model in the catalog - that's because this is our custom bring-your-own model:
+- ✅ Now let's exec into the Foundry Local pod and see what models are available.
+
+- ✅ We can see there's no Llama model in the catalog - that's because this is our custom bring-your-own model:
 
 ```bash
 kubectl exec -it -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry model list"
 ```
 
-- ⬜ Now let's check which model is cached and confirm the deployed version of the custom Llama model:
+- ✅ Now let's check which model is cached in Foundry Local and confirm the deployed version of the custom Llama model:
 
 ```bash
 kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list | tail -n +3 | sed 's/Model was not found in catalog//' | awk '{print \$NF}'" && echo "" && kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"
 ```
 
-- ⬜ As you can see, we have the model cached and we're running v1.0.0.
+- ✅ As you can see, we have the model cached and we're running v1.0.0.
 
-- ⬜ Let me open the Open WebUI interface and interact with the Llama CUDA model to show it's working...
+- ✅ Let's open the Open WebUI interface and interact with the Llama CUDA model to show it's working.
 
-- ⬜ I'll submit a prompt: **"Tell me a joke about AI"**... Ha, that's funny! Okay, let's move on with our demo.
+- ✅ I'll submit a prompt and the model to **"Tell me a joke about AI"**.
+
+- ✅ I will admit, that's funny! Okay, let's move on with our demo.
 
 ### 5️⃣ Upgrade to v2.0.0
 
-- ⬜ Now let's trigger an upgrade to v2.0.0 and watch GitOps handle it automatically.
+- ✅ I will come back to VS Code. We are now ready to trigger an upgrade to v2.0.0 and watch the GitOps flow handle it automatically.
 
-- ⬜ Now I'm going to push the v2.0.0 model artifact to ACR. ORAS, which represents OCI Registry as Storage, lets us store AI models as OCI artifacts in ACR, just like container images. Let's switch to VS Code.
+- ✅ Now I'm going to push the v2.0.0 model artifact to Azure Container Registry.
+
+- ✅ To do that, I will be using the ORAS CLI, which represents OCI Registry as Storage. ORAS lets us store AI models as OCI artifacts in Azure Container Registry, just like we would with any other container image.
 
 ```bash
 cd apps/foundry-gpu-oras/models
@@ -166,17 +172,21 @@ oras push foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda:v2.0.0 \
   models.tar.gz:application/gzip
 ```
 
-- ⬜ Let's go back to the Azure portal and verify the new tag appeared in ACR. There it is - we now have both v1.0.0 and v2.0.0.
+- ✅ Let's go back to the Azure portal and verify the new tag appeared in ACR.
 
-- ⬜ Now I need to update Git to tell the GitOps operator on the Kubernetes cluster about this new version. Let's change the tag from v1.0.0 to v2.0.0 in helmrelease.yaml...
+- ✅ There it is - we now have both v1.0.0 and v2.0.0.
 
-- ⬜ Let me start watching the pods so we can see the changes in real-time:
+- ✅ Now I need to update Git to tell the GitOps operator on the Kubernetes cluster about this new version. Let's change the tag from v1.0.0 to v2.0.0 in helmrelease.yaml.
+
+- ✅ Before pushing this update, let me start watching the pods so we can see the changes in real-time:
 
 ```bash
 kubectl get pods -n foundry-system -w
 ```
 
-- ⬜ Now, watch this carefully - I have a side-by-side view here: VS Code on the left where I'll push the Git changes, and Windows Terminal on the right with kubectl watch running. Let's see how the GitOps flow instantly reacts when I push to Git...
+- ✅ Now, watch this carefully - I have a side-by-side view here: VS Code on the left where I'll push the Git updates, and Windows Terminal on the right with kubectl watching the running pods.
+
+- ✅ Let's see how the GitOps flow instantly reacts when I push our update to Git.
 
 ```bash
 git add apps/foundry-gpu-oras/helmrelease.yaml
@@ -184,36 +194,42 @@ git commit -m "Upgrade Foundry Local GPU model to v2.0.0"
 git push origin main
 ```
 
-- ⬜ See that? The moment I pushed to Git, the GitOps operator detected the change and is now terminating the old pod and creating a new one. This is GitOps in real-time!
+- ✅ See that? The moment I pushed to Git, the GitOps operator detected the change and is now terminating the old pod and creating a new one. This is GitOps in real-time!
 
 > **PAUSE RECORDING - Resume when new pod is Running and Ready**
 
-- ⬜ Perfect! The new pod is up and running with v2.0.0.
+- ✅ Perfect! After a couple of minutes the new pod is up and running.
 
 ### 6️⃣ Verification
 
-- ⬜ Let's verify the upgrade worked:
+- ✅ Let's verify the upgrade worked by looking at the logs inside the pod.
 
 ```bash
 kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"
 ```
 
-- ⬜ Perfect - we're now running v2.0.0!
+- ✅ Perfect! We can see that we are now running v2.0.0 of the Llama model!
 
-- ⬜ And let's test it in Open WebUI to confirm the new model is working...
+- ✅ And let's test it by switching back to Open WebUI to confirm the new model is working.
 
-- ⬜ Now let me show you something really cool - let's see the GPU in action.
+- ✅ Now let me show you something really cool - I want to show you the GPU in action.
 
-- ⬜ I have a side-by-side layout here: Open WebUI on the left, and on the right, I'm SSH'd into our Kubernetes node running btop to monitor the GPU.
+- ✅ I have a side-by-side layout here: Open WebUI on the left, and on the right, I'm SSH'd into our Kubernetes node running btop to monitor the GPU workload.
 
-- ⬜ I'll start by submitting a prompt: **"Give me ideas for AI research"**... Watch what happens to the GPU usage in btop... And look, Open WebUI is auto-suggesting follow-up questions - I can click those as well.
+- ✅ I'll start by submitting a prompt to the model, asking it to **"Give me ideas for AI research"** and quickly send a couple follow-up prompts. This will generate a bit of load on the GPU.
 
-- ⬜ See that? The GPU usage spikes immediately! This shows our model is actually leveraging the GPU acceleration.
+- ✅ Watch closely what happens to the GPU usage in btop.
+
+- ✅ See that? The GPU usage spikes immediately! This shows our model is actually leveraging the GPU acceleration.
 
 ### 7️⃣ Closing
 
 > **Show closing slide with architecture diagram**
 
-- ⬜ And that's it! We just demonstrated a complete GitOps workflow for upgrading an AI model on Kubernetes. The key takeaway here is that we never touched the cluster directly - we just pushed a new artifact to the registry and updated Git. GitOps handled the entire deployment automatically.
-- ⬜ This same pattern works for any model upgrade, rollback, or configuration change. Git is the single source of truth, and the cluster converges to match it.
-- ⬜ Thanks for watching!
+- ✅ And that's it! We just demonstrated a complete GitOps workflow for upgrading Foundry Local AI model on Arc-enabled Kubernetes.
+
+- ✅ The key takeaway here is that we never touched the cluster directly - we just pushed a new artifact to the registry and updated Git. GitOps handled the entire deployment automatically.
+
+- ✅ This same pattern works for any model upgrade, rollback, or configuration change. Git is the single source of truth, and the cluster converges to match it.
+
+- ✅ Thanks for watching!
