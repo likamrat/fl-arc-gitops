@@ -196,7 +196,7 @@ watch kubectl get pods -n foundry-system
 ```bash
 # Verify GitOps config deleted
 az k8s-configuration flux list \
-  --cluster-name ROG-AI \
+  --cluster-name ROG-FL \
   --cluster-type connectedClusters \
   --resource-group Foundry-Arc
 

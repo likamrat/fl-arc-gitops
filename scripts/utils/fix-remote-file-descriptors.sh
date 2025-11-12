@@ -7,7 +7,7 @@
 # via SSH to resolve the "Too many open files" error.
 #
 # Prerequisites:
-# - SSH access to the k3s node (lior@192.168.1.46)
+# - SSH access to the k3s node (lior@192.168.8.100)
 # - SSH key authentication configured (no password prompt)
 # - sudo access on the remote node
 #
@@ -26,7 +26,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
-K3S_NODE="lior@192.168.1.46"
+K3S_NODE="lior@192.168.8.102"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FIX_SCRIPT="${SCRIPT_DIR}/fix-file-descriptors.sh"
 
@@ -62,7 +62,7 @@ if ! ssh -o ConnectTimeout=10 -o BatchMode=yes "${K3S_NODE}" "echo 'SSH connecti
     echo -e "${RED}✗ Cannot connect to ${K3S_NODE}${NC}"
     echo -e "${YELLOW}  Please ensure:${NC}"
     echo -e "${YELLOW}  1. SSH key is configured for ${K3S_NODE}${NC}"
-    echo -e "${YELLOW}  2. Node is accessible at 192.168.1.46${NC}"
+    echo -e "${YELLOW}  2. Node is accessible at 192.168.8.100${NC}"
     echo -e "${YELLOW}  3. User 'lior' has SSH access${NC}"
     exit 1
 fi

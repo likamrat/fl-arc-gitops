@@ -1,6 +1,70 @@
 # Demo Flight Check and Talk Track
 
-## 🎬 Flight Check
+## 🎯 Demo Pre-Requisites
+
+**Two Arc-enabled Kubernetes Clusters:**
+- **ROG-FL-01** (192.168.8.101) - Active GitOps, will upgrade from v1.0.0 → v2.0.0 during demo
+- **ROG-FL-02** (192.168.8.102) - GitOps suspended, already at v2.0.0 to show final state
+
+**Required Tools:**
+- `kubectx` - Kubernetes context switcher
+- `kubectl` - Kubernetes CLI
+- `az` - Azure CLI (authenticated with `az login`)
+- `oras` - OCI Registry as Storage CLI (authenticated to foundryoci.azurecr.io)
+- `git` - Version control
+
+**Pre-Demo Setup Commands:**
+
+> **Note:** Use the automated script for setup: `./scripts/demo/demo-prep.sh`
+
+```bash
+# Run the demo preparation script (automates all steps below)
+cd ~/repos/fl-arc-gitops
+./scripts/demo/demo-prep.sh
+```
+
+**Or run manually:**
+
+```bash
+# 1. Suspend GitOps on ROG-FL-02 (prevents it from reacting to Git changes)
+kubectx rog-fl-02
+kubectl patch kustomization foundry-gitops-apps -n foundry-system -p '{"spec":{"suspend":true}}' --type=merge
+
+# 2. Verify both clusters are at v2.0.0 before rollback
+kubectx rog-fl-01 && kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep "Tag:"
+kubectx rog-fl-02 && kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep "Tag:"
+
+# 3. Delete v2.0.0 from ACR
+az acr repository delete --name foundryoci --image byo-models-gpu/llama-3.2-1b-cuda:v2.0.0 --yes
+
+# 4. Rollback Git to v1.0.0 (only ROG-FL-01 will react since FL-02 is suspended)
+cd ~/repos/fl-arc-gitops
+sed -i 's/tag: v2.0.0/tag: v1.0.0/' apps/foundry-gpu-oras/helmrelease.yaml
+git add apps/foundry-gpu-oras/helmrelease.yaml
+git commit -m "Rollback to v1.0.0 for demo"
+git push origin main
+
+# 5. Wait for ROG-FL-01 to rollback to v1.0.0 (~5 minutes)
+kubectx rog-fl-01
+kubectl get pods -n foundry-system -w
+
+# 6. Verify final demo state
+kubectx rog-fl-01 && kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep "Tag:"  # Should show v1.0.0
+kubectx rog-fl-02 && kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep "Tag:"  # Should show v2.0.0
+oras repo tags foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda  # Should show only v1.0.0
+```
+
+**Post-Demo Cleanup:**
+
+```bash
+# Resume GitOps on ROG-FL-02
+kubectx rog-fl-02
+kubectl patch kustomization foundry-gitops-apps -n foundry-system -p '{"spec":{"suspend":false}}' --type=merge
+```
+
+---
+
+## �🎬 Flight Check
 
 ### 📊 PowerPoint Setup
 
@@ -15,16 +79,17 @@
 
 ### 💻 Windows Terminal Tabs Setup
 
-> **Note:** All kubectl commands run in Windows Terminal tabs
+> **Note:** All kubectl commands run in Windows Terminal tabs. Start on **rog-fl-01** context.
 
 | Tab&nbsp;# | Purpose | Directory | Commands Ready to Run |
 |------------|---------|-----------|----------------------|
-| Tab&nbsp;1 | Get Pods | `~` | `kubectl get pods -n foundry-system` |
-| Tab&nbsp;2 | Model List | `~` | `kubectl exec -it -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry model list"` |
-| Tab&nbsp;3 | Cache & Version Check (v1.0.0) | `~` | `kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list \| tail -n +3 \| sed 's/Model was not found in catalog//' \| awk '{print \$NF}'" && echo "" && kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
-| Tab&nbsp;4 | Watch Pods | `~` | `kubectl get pods -n foundry-system -w` |
-| Tab&nbsp;5 | Check Version (v2.0.0) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
-| Tab&nbsp;6 | GPU Monitor (btop) | `~` | `ssh <kubernetes-node>` then `btop` (for GPU usage monitoring) |
+| Tab&nbsp;1 | Get Pods (ROG-FL-01) | `~` | `kubectx rog-fl-01 && kubectl get pods -n foundry-system` |
+| Tab&nbsp;2 | Model List (ROG-FL-01) | `~` | `kubectl exec -it -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry model list"` |
+| Tab&nbsp;3 | Cache & Version Check v1.0.0 (ROG-FL-01) | `~` | `kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list \| tail -n +3 \| sed 's/Model was not found in catalog//' \| awk '{print \$NF}'" && echo "" && kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
+| Tab&nbsp;4 | Watch Pods (ROG-FL-01) | `~` | `kubectl get pods -n foundry-system -w` |
+| Tab&nbsp;5 | Switch to ROG-FL-02 & Check Pods | `~` | `kubectx rog-fl-02 && kubectl get pods -n foundry-system` |
+| Tab&nbsp;6 | Check Version v2.0.0 (ROG-FL-02) | `~` | `kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
+| Tab&nbsp;7 | GPU Monitor (nvitop) | `~` | `ssh lior@192.168.8.101` then `nvitop` (for GPU usage monitoring on ROG-FL-01) |
 
 ![Windows Terminal Tabs](img/interface/termainl_tabs.png)
 
@@ -45,10 +110,11 @@
 
 | Browser | Tab | URL/Purpose |
 |---------|-----|-------------|
-| Edge | Tab 1 | Azure Portal - Arc-enabled cluster (GitOps configuration) |
+| Edge | Tab 1 | Azure Portal - Arc-enabled cluster ROG-FL-01 (GitOps configuration) |
 | Edge | Tab 2 | Azure Portal - Container Registry (ACR with `byo-models-gpu/llama-3.2-1b-cuda` repo) |
 | Edge | Tab 3 | GitHub - fl-arc-gitops repository |
-| Edge | Tab 4 | Open WebUI - Model interaction |
+| Edge | Tab 4 | Open WebUI (ROG-FL-01) - http://192.168.8.101:30800 |
+| Edge | Tab 5 | Open WebUI (ROG-FL-02) - http://192.168.8.102:30800 |
 
 ![Browser Tabs](img/interface/browser_tabs.png)
 ![Browser Start](img/interface/browser_start.png)
@@ -58,35 +124,61 @@
 | Order | Interface | Purpose | Details |
 |-------|-----------|---------|---------|
 | 1 | 📊 PowerPoint | Show architecture diagram | Architecture diagram showing GitOps flow for AI model deployments |
-| 2 | 🌐 Browser Tab 1 | Show Arc-enabled cluster | Azure Portal - GitOps configuration |
-| 3 | 🌐 Browser Tab 2 | Show ACR with v1.0.0 tag | Azure Portal - Container Registry |
-| 4 | 🌐 Browser Tab 3 | Show GitHub repo | GitHub - fl-arc-gitops repository |
+| 2 | 🌐 Browser Tab 1 | Show Arc-enabled cluster ROG-FL-01 | Azure Portal - GitOps configuration |
+| 3 | 🌐 Browser Tab 2 | Show ACR with v1.0.0 tag only | Azure Portal - Container Registry (v2.0.0 deleted) |
+| 4 | 🌐 Browser Tab 3 | Show GitHub repo | GitHub - fl-arc-gitops repository at v1.0.0 |
 | 5 | 🔧 VS Code Editor | Show helmrelease.yaml | View v1.0.0 tag reference on line 36 |
-| 6 | 💻 Windows Terminal Tab 1 | Get pods | Check current running pods |
-| 7 | 💻 Windows Terminal Tab 2 | Model list | Show available models in Foundry |
-| 8 | 💻 Windows Terminal Tab 3 | Cache & version check | Show cached model and verify v1.0.0 |
-| 9 | 🌐 Browser Tab 4 | Test Open WebUI | Interact with v1.0.0 model |
-| 10 | 💻 Windows Terminal Tab 4 | Watch pods | Start watching for changes |
+| 6 | 💻 Windows Terminal Tab 1 | Get pods (ROG-FL-01) | Check current running pods on rog-fl-01 |
+| 7 | 💻 Windows Terminal Tab 2 | Model list (ROG-FL-01) | Show available models in Foundry on rog-fl-01 |
+| 8 | 💻 Windows Terminal Tab 3 | Cache & version check (ROG-FL-01) | Show cached model and verify v1.0.0 |
+| 9 | 🌐 Browser Tab 4 | Test Open WebUI (ROG-FL-01) | Interact with v1.0.0 model at 192.168.8.101:30800 |
+| 10 | 💻 Windows Terminal Tab 4 | Watch pods (ROG-FL-01) | Start watching for changes on rog-fl-01 |
 | 11 | 🔧 VS Code Terminal 2 | ORAS push | Push v2.0.0 artifact to ACR |
 | 12 | 🌐 Browser Tab 2 | Verify ACR | Confirm v2.0.0 tag appeared |
 | 13 | 🔧 VS Code Editor | Edit helmrelease.yaml | Change tag from v1.0.0 to v2.0.0 in helmrelease.yaml |
-| 14 | 🔧 VS Code Terminal 3 + 💻 Windows Terminal Tab 4 | Git commands + Watch | **Side-by-side:** Git push + kubectl watch showing GitOps trigger |
-| 15 | 💻 Windows Terminal Tab 4 | Observe GitOps | Watch pod rollout (~90 seconds) |
-| 16 | 💻 Windows Terminal Tab 5 | Check version | Verify new v2.0.0 version |
-| 17 | 🌐 Browser Tab 4 | Test Open WebUI | Interact with v2.0.0 model |
-| 18 | 💻 Windows Terminal Tab 6 + 🌐 Browser Tab 4 | GPU monitoring | **Side-by-side:** Open WebUI + btop showing GPU usage spike |
-| 19 | 📊 PowerPoint | Closing remarks | Show architecture diagram slide during closing |
+| 14 | 🔧 VS Code Terminal 3 + 💻 Windows Terminal Tab 4 | Git commands + Watch | **Side-by-side:** Git push + kubectl watch showing GitOps trigger on rog-fl-01 |
+| 15 | 💻 Windows Terminal Tab 4 | Observe GitOps start | Watch old pod terminating, new pod creating (~30 seconds) |
+| 16 | 💻 Windows Terminal Tab 5 | Switch to ROG-FL-02 | **While FL-01 upgrades:** Switch context and check pods on rog-fl-02 |
+| 17 | 💻 Windows Terminal Tab 6 | Check version (ROG-FL-02) | Show rog-fl-02 already has v2.0.0 deployed |
+| 18 | 🌐 Browser Tab 5 | Test Open WebUI (ROG-FL-02) | Demonstrate v2.0.0 model at 192.168.8.102:30800 |
+| 19 | 💻 Windows Terminal Tab 1 | Back to ROG-FL-01 | Switch back to rog-fl-01, show upgrade completed |
+| 20 | 💻 Windows Terminal Tab 7 + 🌐 Browser Tab 4 | GPU monitoring | **Side-by-side:** Open WebUI + nvitop showing GPU usage spike on ROG-FL-01 |
+| 21 | 📊 PowerPoint | Closing remarks | Show architecture diagram slide during closing |
 
 ### ✅ Pre-Flight Checklist
 
-- Verify system is at v1.0.0 baseline
-- All Windows Terminal tabs open and positioned (run `cd \` in each tab to be in `~`)
-- VS Code open with `helmrelease.yaml` visible and terminals in `~/repos/fl-arc-gitops`
-- All browser tabs loaded and positioned
-- Architecture diagram ready to show
-- Delete existing chats in Open WebUI
-- Test Open WebUI connection before starting
-- Close all messaging apps and Outlook
+**Environment Verification:**
+- [ ] ROG-FL-01 is at v1.0.0 (GitOps active)
+- [ ] ROG-FL-02 is at v2.0.0 (GitOps suspended)
+- [ ] ACR only has v1.0.0 tag (v2.0.0 deleted)
+- [ ] Git repository is at v1.0.0
+- [ ] Verify `kubectx` shows both rog-fl-01 and rog-fl-02 contexts
+
+**Tool Authentication:**
+- [ ] Azure CLI authenticated: `az account show`
+- [ ] ORAS CLI authenticated: `oras login foundryoci.azurecr.io` (or test with `oras repo tags foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda`)
+
+**Interface Setup:**
+- [ ] All Windows Terminal tabs (7 tabs) open and positioned
+- [ ] Run `cd ~` in each Windows Terminal tab
+- [ ] Set default context to rog-fl-01: `kubectx rog-fl-01`
+- [ ] VS Code open with `helmrelease.yaml` visible (showing v1.0.0)
+- [ ] VS Code terminals ready in `~/repos/fl-arc-gitops`
+- [ ] All browser tabs (5 tabs) loaded and positioned:
+  - [ ] Tab 1: Azure Portal - ROG-FL-01 GitOps
+  - [ ] Tab 2: Azure Portal - ACR
+  - [ ] Tab 3: GitHub repository
+  - [ ] Tab 4: Open WebUI ROG-FL-01 (192.168.8.101:30800)
+  - [ ] Tab 5: Open WebUI ROG-FL-02 (192.168.8.102:30800)
+
+**Final Checks:**
+- [ ] Architecture PowerPoint diagram ready to show
+- [ ] Delete existing chats in both Open WebUI instances
+- [ ] Test both Open WebUI connections (FL-01 and FL-02)
+- [ ] Close all messaging apps and Outlook
+- [ ] Verify models.tar.gz exists in `apps/foundry-gpu-oras/models/`
+- [ ] Verify Azure CLI authenticated: `az account show`
+- [ ] Verify ORAS CLI authenticated to ACR: `oras repo tags foundryoci.azurecr.io/byo-models-gpu/llama-3.2-1b-cuda`
 
 ---
 
@@ -120,16 +212,17 @@
 
 ### 3️⃣ Setup
 
-- ✅ In the Azure portal, we can see our Arc-enabled cluster with GitOps configuration pointing to our GitHub repository. Notice the HelmRelease object here - we'll come back to this.
-- ✅ Still in the portal, let's look at our container registry. Here's the `byo-models-gpu/llama-3.2-1b-cuda` repository with just the v1.0.0 tag available at the moment.
-- ✅ Over in GitHub, this is the repo we just saw referenced in the GitOps config.
+- ✅ In the Azure portal, we can see our Arc-enabled cluster ROG-FL-01 with GitOps configuration pointing to our GitHub repository. Notice the HelmRelease object here - we'll come back to this.
+- ✅ Still in the portal, let's look at our container registry. Here's the `byo-models-gpu/llama-3.2-1b-cuda` repository with just the v1.0.0 tag available at the moment. We cleaned up v2.0.0 for this demo.
+- ✅ Over in GitHub, this is the repo we just saw referenced in the GitOps config. It's currently set to v1.0.0.
 - ✅ And in VS Code, here's the helmrelease.yaml manifest that the GitOps operator is watching. You can see the v1.0.0 tag reference here on line 36.
 
-### 4️⃣ Current State
+### 4️⃣ Current State (ROG-FL-01)
 
-- ✅ Before we upgrade, let's see what's running right now on our Kubernetes cluster by looking at the pods.
+- ✅ Before we upgrade, let's see what's running right now on our ROG-FL-01 cluster by looking at the pods.
 
 ```bash
+kubectx rog-fl-01
 kubectl get pods -n foundry-system
 ```
 
@@ -196,29 +289,53 @@ git push origin main
 
 - ✅ See that? The moment I pushed to Git, the GitOps operator detected the change and is now terminating the old pod and creating a new one. This is GitOps in real-time!
 
-> **PAUSE RECORDING - Resume when new pod is Running and Ready**
+- ✅ Now here's something interesting - while ROG-FL-01 is upgrading, let me show you something. I actually have a second Arc-enabled cluster called ROG-FL-02. Let's switch to it.
 
-- ✅ Perfect! After a couple of minutes the new pod is up and running.
+```bash
+kubectx rog-fl-02
+kubectl get pods -n foundry-system
+```
 
-### 6️⃣ Verification
-
-- ✅ Let's verify the upgrade worked by looking at the logs inside the pod.
+- ✅ Look at this - ROG-FL-02 already has the v2.0.0 version deployed! Let me verify:
 
 ```bash
 kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"
 ```
 
-- ✅ Perfect! We can see that we are now running v2.0.0 of the Llama model!
+- ✅ There it is - Tag: v2.0.0! This shows you what the final state looks like. ROG-FL-02 has GitOps temporarily suspended for demo purposes, but this is what ROG-FL-01 will look like in just a few minutes.
 
-- ✅ And let's test it by switching back to Open WebUI to confirm the new model is working.
+- ✅ Let me quickly test the v2.0.0 model on ROG-FL-02 in Open WebUI to show it's working. I'll access it at 192.168.8.102:30800.
 
-- ✅ Now let me show you something really cool - I want to show you the GPU in action.
+- ✅ Perfect! Now let's switch back to ROG-FL-01 and see if the upgrade has completed.
 
-- ✅ I have a side-by-side layout here: Open WebUI on the left, and on the right, I'm SSH'd into our Kubernetes node running btop to monitor the GPU workload.
+```bash
+kubectx rog-fl-01
+kubectl get pods -n foundry-system
+```
+
+> **PAUSE RECORDING IF NEEDED - Resume when new pod is Running and Ready**
+
+- ✅ Perfect! After a couple of minutes the new pod is up and running on ROG-FL-01.
+
+### 6️⃣ Verification (ROG-FL-01)
+
+- ✅ Let's verify the upgrade worked on ROG-FL-01 by looking at the logs inside the pod.
+
+```bash
+kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') | grep -E "(Registry:|Repository:|Tag:)" | grep -v "UserAgent"
+```
+
+- ✅ Perfect! We can see that we are now running v2.0.0 of the Llama model on ROG-FL-01!
+
+- ✅ And let's test it by switching to Open WebUI at 192.168.8.101:30800 to confirm the new model is working on ROG-FL-01.
+
+- ✅ Now let me show you something really cool - I want to show you the GPU in action on ROG-FL-01.
+
+- ✅ I have a side-by-side layout here: Open WebUI on the left at 192.168.8.101:30800, and on the right, I'm SSH'd into our ROG-FL-01 Kubernetes node (192.168.8.101) running nvitop to monitor the GPU workload.
 
 - ✅ I'll start by submitting a prompt to the model, asking it to **"Give me ideas for AI research"** and quickly send a couple follow-up prompts. This will generate a bit of load on the GPU.
 
-- ✅ Watch closely what happens to the GPU usage in btop.
+- ✅ Watch closely what happens to the GPU usage in nvitop.
 
 - ✅ See that? The GPU usage spikes immediately! This shows our model is actually leveraging the GPU acceleration.
 
@@ -226,10 +343,12 @@ kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 
 > **Show closing slide with architecture diagram**
 
-- ✅ And that's it! We just demonstrated a complete GitOps workflow for upgrading Foundry Local AI model on Arc-enabled Kubernetes.
+- ✅ And that's it! We just demonstrated a complete GitOps workflow for upgrading Foundry Local AI models on Arc-enabled Kubernetes across multiple clusters.
 
-- ✅ The key takeaway here is that we never touched the cluster directly - we just pushed a new artifact to the registry and updated Git. GitOps handled the entire deployment automatically.
+- ✅ The key takeaway here is that we never touched the clusters directly - we just pushed a new artifact to the registry and updated Git. GitOps handled the entire deployment automatically on ROG-FL-01.
 
-- ✅ This same pattern works for any model upgrade, rollback, or configuration change. Git is the single source of truth, and the cluster converges to match it.
+- ✅ And as you saw with ROG-FL-02, this same pattern can be used across multiple clusters. One Git commit can trigger updates across your entire fleet of Arc-enabled Kubernetes clusters.
+
+- ✅ This same pattern works for any model upgrade, rollback, or configuration change. Git is the single source of truth, and the clusters converge to match it.
 
 - ✅ Thanks for watching!

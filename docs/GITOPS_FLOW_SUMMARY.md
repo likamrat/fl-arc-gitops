@@ -2,9 +2,9 @@
 
 ## Architecture Overview
 
-- **k3s Cluster**: v1.33.5 on 192.168.1.46 (ROG-AI)
+- **k3s Cluster**: v1.33.5 on 192.168.8.100 (ROG-FL)
 - **GPU**: NVIDIA RTX 5080 (16GB VRAM, CUDA 13.0, driver 581.57)
-- **Azure Arc**: ROG-AI cluster (Foundry-Arc resource group, eastus2)
+- **Azure Arc**: ROG-FL cluster (Foundry-Arc resource group, eastus2)
 - **Flux**: v1.17.3 (microsoft.flux extension)
 - **Container Registry**: foundryoci.azurecr.io (public, anonymous pull enabled)
 - **Git Repository**: github.com/likamrat/fl-arc-gitops

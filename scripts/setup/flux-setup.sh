@@ -31,7 +31,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 RESOURCE_GROUP="Foundry-Arc"
-CLUSTER_NAME="ROG-AI"
+CLUSTER_NAME="ROG-FL-02"
 CLUSTER_TYPE="connectedClusters"  # For Arc-enabled K8s (use "managedClusters" for AKS)
 FLUX_NAMESPACE="flux-system"
 EXTENSION_NAME="flux"

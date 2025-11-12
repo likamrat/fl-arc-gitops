@@ -55,7 +55,7 @@ kubectl get imagepolicy foundry-local-olive-models -n flux-system -o jsonpath='{
 kubectl get svc -n foundry-system | grep openwebui
 ```
 
-**Access:** http://192.168.1.46:30800
+**Access:** http://192.168.8.100:30800
 
 **Login:**
 - Email: `admin@foundry.local`
@@ -216,7 +216,7 @@ kubectl get pods -n foundry-system -l app.kubernetes.io/component=foundry
 
 ### Test Upgraded GPU Model via Open WebUI
 
-**Access:** http://192.168.1.46:30800
+**Access:** http://192.168.8.100:30800
 
 **Test:**
 
@@ -280,7 +280,7 @@ kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubern
 kubectl get pods -n foundry-system
 
 # 2. Test in UI (browser)
-# http://192.168.1.46:30800 - test GPU model
+# http://192.168.8.100:30800 - test GPU model
 
 # 3. Push v2.0.0 to registry
 cd /home/lior/repos/fl-arc-gitops/apps/foundry-gpu-oras/models

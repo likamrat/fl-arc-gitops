@@ -13,16 +13,16 @@
 # - Deletes Flux GitOps configuration from Arc cluster
 # - Removes Foundry Local application resources (Helm chart, pods, etc.)
 # - Deletes foundry-system namespace
-# - Removes ALL OCI artifacts from ACR EXCEPT v0.1.0 (keeps baseline for next demo)
-# - Reverts Git repository code to v0.1.0
+# - Removes ALL OCI artifacts from ACR EXCEPT v1.0.0 (keeps baseline for next demo)
+# - Reverts Git repository code to v1.0.0
 # - Commits and pushes changes to Git
 # - Verifies Flux system controllers remain healthy
 # - Shows final state comparison
 #
 # SOFT CLEANUP (--soft):
 # - Cleans up Open WebUI chat history
-# - Removes ALL OCI artifacts from ACR EXCEPT v0.1.0
-# - Reverts Git repository code to v0.1.0
+# - Removes ALL OCI artifacts from ACR EXCEPT v1.0.0
+# - Reverts Git repository code to v1.0.0
 # - Commits and pushes changes to Git
 # - Waits for GitOps to sync and rollback deployment
 # - Validates resources on cluster (HelmRelease, pods, version)
@@ -105,7 +105,7 @@ MAGENTA='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Configuration
-CLUSTER_NAME="ROG-AI"
+CLUSTER_NAME="ROG-FL"
 RESOURCE_GROUP="Foundry-Arc"
 CONFIG_NAME="foundry-gitops"
 NAMESPACE="foundry-system"
@@ -242,7 +242,7 @@ conn.close()
   fi
   echo ""
   
-  # Step 1: Remove all OCI artifacts except v0.1.0
+  # Step 1: Remove all OCI artifacts except v1.0.0
   echo -e "${BLUE}Step 1: Removing OCI artifacts (keeping only ${VERSION_TO_REVERT})...${NC}"
   
   TAGS=$(oras repo tags ${REGISTRY}/${REPO_NAME} 2>/dev/null || echo "")
@@ -280,7 +280,7 @@ conn.close()
   fi
   echo ""
   
-  # Step 2: Revert code to v0.1.0
+  # Step 2: Revert code to v1.0.0
   echo -e "${BLUE}Step 2: Reverting Git repository to ${VERSION_TO_REVERT}...${NC}"
   
   # Check for uncommitted changes
@@ -294,7 +294,7 @@ conn.close()
     fi
   fi
   
-  # Update helmrelease.yaml to v0.1.0
+  # Update helmrelease.yaml to v1.0.0
   CURRENT_TAG_IN_FILE=$(yq eval '.spec.values.foundry.byo.tag' apps/foundry-gpu-oras/helmrelease.yaml 2>/dev/null || grep -A 5 "byo:" apps/foundry-gpu-oras/helmrelease.yaml | grep "tag:" | awk '{print $2}' | head -1)
   
   if [[ "${CURRENT_TAG_IN_FILE}" != "${VERSION_TO_REVERT}" ]]; then
@@ -650,7 +650,7 @@ else
 fi
 echo ""
 
-# Step 3: Remove all OCI artifacts except v0.1.0 from registry
+# Step 3: Remove all OCI artifacts except v1.0.0 from registry
 echo -e "${BLUE}Step 3: Removing OCI artifacts (keeping only ${VERSION_TO_REVERT})...${NC}"
 
 # Get all tags from registry
@@ -689,7 +689,7 @@ else
 fi
 echo ""
 
-# Step 4: Revert code to v0.1.0
+# Step 4: Revert code to v1.0.0
 echo -e "${BLUE}Step 4: Reverting Git repository to ${VERSION_TO_REVERT}...${NC}"
 
 # Check for uncommitted changes
@@ -703,7 +703,7 @@ if [[ -n $(git status -s) ]]; then
   fi
 fi
 
-# Update helmrelease.yaml to v0.1.0
+# Update helmrelease.yaml to v1.0.0
 CURRENT_TAG_IN_FILE=$(yq eval '.spec.values.foundry.byo.tag' apps/foundry-gpu-oras/helmrelease.yaml 2>/dev/null || grep -A 5 "byo:" apps/foundry-gpu-oras/helmrelease.yaml | grep "tag:" | awk '{print $2}' | head -1)
 
 if [[ "${CURRENT_TAG_IN_FILE}" != "${VERSION_TO_REVERT}" ]]; then

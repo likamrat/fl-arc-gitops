@@ -9,7 +9,7 @@ This repository demonstrates GitOps-based deployment of **Foundry Local with GPU
 **Architecture**:
 - **Cluster**: k3s v1.33.5 with NVIDIA GPU (RTX 5080 16GB, CUDA 13.0)
 - **GitOps Engine**: Flux CD v1.17.3 (via Azure Arc extension)
-- **Azure Arc**: ROG-AI cluster in Foundry-Arc resource group
+- **Azure Arc**: ROG-FL cluster in Foundry-Arc resource group
 - **Container Registry**: foundryoci.azurecr.io (anonymous pull enabled)
 - **Model Artifacts**: ORAS OCI artifacts (foundry/models artifact type)
 - **Deployment**: Helm chart with BYO ORAS configuration
