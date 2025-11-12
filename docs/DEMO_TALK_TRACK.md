@@ -86,6 +86,8 @@ kubectl patch kustomization foundry-gitops-apps -n foundry-system -p '{"spec":{"
 4. Position applications on respective desktops
 5. Use `Ctrl + Win + ←/→` to switch between desktops during demo
 
+> **Note:** When presenting on a stage with a dedicated PowerPoint station, you may only need 2 desktops (Browser and VSC+Terminal) since PowerPoint will be on a separate system.
+
 ![Windows Virtual Desktops](img/interface/desktops.png)
 
 ### 📊 PowerPoint Setup
