@@ -124,24 +124,24 @@ kubectl patch kustomization foundry-gitops-apps -n foundry-system -p '{"spec":{"
 | Order | Interface | Cluster | Purpose | Details |
 |-------|-----------|---------|---------|---------|
 | 1 | 📊 PowerPoint | - | Show architecture diagram | Architecture diagram showing GitOps flow for AI model deployments |
-| 2 | 🌐 Browser Tab 1 | <nobr>ROG-FL-01</nobr> | Show Arc-enabled cluster | Azure Portal - GitOps configuration |
+| 2 | 🌐 Browser Tab 1 | ROG&#8209;FL&#8209;01 | Show Arc-enabled cluster | Azure Portal - GitOps configuration |
 | 3 | 🌐 Browser Tab 2 | - | Show ACR with v1.0.0 tag only | Azure Portal - Container Registry (v2.0.0 deleted) |
 | 4 | 🌐 Browser Tab 3 | - | Show GitHub repo | GitHub - fl-arc-gitops repository at v1.0.0 |
 | 5 | 🔧 VS Code Editor | - | Show helmrelease.yaml | View v1.0.0 tag reference on line 36 |
-| 6 | 💻 Windows Terminal Tab 1 | <nobr>ROG-FL-01</nobr> | Get pods | Check current running pods |
-| 7 | 💻 Windows Terminal Tab 2 | <nobr>ROG-FL-01</nobr> | Model list | Show available models in Foundry |
-| 8 | 💻 Windows Terminal Tab 3 | <nobr>ROG-FL-01</nobr> | Cache & version check | Show cached model and verify v1.0.0 |
-| 9 | 🌐 Browser Tab 4 | <nobr>ROG-FL-01</nobr> | Test Open WebUI | Interact with v1.0.0 model at 192.168.8.101:30800 |
-| 10 | 💻 Windows Terminal Tab 4 | <nobr>ROG-FL-01</nobr> | Watch pods | Start watching for changes |
+| 6 | 💻 Windows Terminal Tab 1 | ROG&#8209;FL&#8209;01 | Get pods | Check current running pods |
+| 7 | 💻 Windows Terminal Tab 2 | ROG&#8209;FL&#8209;01 | Model list | Show available models in Foundry |
+| 8 | 💻 Windows Terminal Tab 3 | ROG&#8209;FL&#8209;01 | Cache & version check | Show cached model and verify v1.0.0 |
+| 9 | 🌐 Browser Tab 4 | ROG&#8209;FL&#8209;01 | Test Open WebUI | Interact with v1.0.0 model at 192.168.8.101:30800 |
+| 10 | 💻 Windows Terminal Tab 4 | ROG&#8209;FL&#8209;01 | Watch pods | Start watching for changes |
 | 11 | 🔧 VS Code Terminal 2 | - | ORAS push | Push v2.0.0 artifact to ACR |
 | 12 | 🌐 Browser Tab 2 | - | Verify ACR | Confirm v2.0.0 tag appeared |
 | 13 | 🔧 VS Code Editor | - | Edit helmrelease.yaml | Change tag from v1.0.0 to v2.0.0 |
-| 14 | 🔧 VS Code Terminal 3 + 💻 Windows Terminal Tab 4 | <nobr>ROG-FL-01</nobr> | Git commands + Watch | **Side-by-side:** Git push + kubectl watch showing GitOps trigger |
-| 15 | 💻 Windows Terminal Tab 4 | <nobr>ROG-FL-01</nobr> | Observe GitOps start | Watch old pod terminating, new pod creating (~30 seconds) |
-| 16 | 💻 Windows Terminal Tab 5 | <nobr>ROG-FL-02</nobr> | Switch to FL-02 | **While FL-01 upgrades:** Switch context and check pods |
-| 17 | 💻 Windows Terminal Tab 6 | <nobr>ROG-FL-02</nobr> | Check version | Show already has v2.0.0 deployed |
-| 18 | 🌐 Browser Tab 5 | <nobr>ROG-FL-02</nobr> | Test Open WebUI | Demonstrate v2.0.0 model at 192.168.8.102:30800 |
-| 19 | 💻 Windows Terminal Tab 7 + 🌐 Browser Tab 5 | <nobr>ROG-FL-02</nobr> | GPU monitoring | **Side-by-side:** Open WebUI + nvitop showing GPU usage spike |
+| 14 | 🔧 VS Code Terminal 3 + 💻 Windows Terminal Tab 4 | ROG&#8209;FL&#8209;01 | Git commands + Watch | **Side-by-side:** Git push + kubectl watch showing GitOps trigger |
+| 15 | 💻 Windows Terminal Tab 4 | ROG&#8209;FL&#8209;01 | Observe GitOps start | Watch old pod terminating, new pod creating (~30 seconds) |
+| 16 | 💻 Windows Terminal Tab 5 | ROG&#8209;FL&#8209;02 | Switch to FL-02 | **While FL-01 upgrades:** Switch context and check pods |
+| 17 | 💻 Windows Terminal Tab 6 | ROG&#8209;FL&#8209;02 | Check version | Show already has v2.0.0 deployed |
+| 18 | 🌐 Browser Tab 5 | ROG&#8209;FL&#8209;02 | Test Open WebUI | Demonstrate v2.0.0 model at 192.168.8.102:30800 |
+| 19 | 💻 Windows Terminal Tab 7 + 🌐 Browser Tab 5 | ROG&#8209;FL&#8209;02 | GPU monitoring | **Side-by-side:** Open WebUI + nvitop showing GPU usage spike |
 | 20 | 📊 PowerPoint | - | Closing remarks | Show architecture diagram slide during closing |
 
 ### ✅ Pre-Flight Checklist
