@@ -64,7 +64,29 @@ kubectl patch kustomization foundry-gitops-apps -n foundry-system -p '{"spec":{"
 
 ---
 
-## �🎬 Flight Check
+## 🎬 Flight Check
+
+### 🖥️ Windows Desktops Setup
+
+> **Required:** Three Windows 11 virtual desktops configured and named for easy switching during demo
+
+| Desktop | Name | Purpose | Applications |
+|---------|------|---------|--------------|
+| Desktop 1 | **PowerPoint** | Presentation slides | PowerPoint with architecture diagrams |
+| Desktop 2 | **Browser** | Web interfaces | Edge browser with Azure Portal, GitHub, Open WebUI tabs |
+| Desktop 3 | **VSC+Terminal** | Development environment | VS Code + Windows Terminal for commands and edits |
+
+**Setup Instructions:**
+1. Open Task View (Win + Tab)
+2. Create 3 virtual desktops
+3. Right-click each desktop to rename:
+   - Desktop 1 → "PowerPoint"
+   - Desktop 2 → "Browser"
+   - Desktop 3 → "VSC+Terminal"
+4. Position applications on respective desktops
+5. Use `Ctrl + Win + ←/→` to switch between desktops during demo
+
+![Windows Virtual Desktops](img/interface/desktops.png)
 
 ### 📊 PowerPoint Setup
 
@@ -83,7 +105,7 @@ kubectl patch kustomization foundry-gitops-apps -n foundry-system -p '{"spec":{"
 
 | Tab&nbsp;# | Purpose | Directory | Commands Ready to Run |
 |------------|---------|-----------|----------------------|
-| Tab&nbsp;1 | Get Pods (ROG-FL-01) | `~` | `kubectx rog-fl-01 && kubectl get pods -n foundry-system` |
+| Tab&nbsp;1 | Get Pods (ROG-FL-01) | `~` | `kubectl get pods -n foundry-system` |
 | Tab&nbsp;2 | Model List (ROG-FL-01) | `~` | `kubectl exec -it -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry model list"` |
 | Tab&nbsp;3 | Cache & Version Check v1 (ROG-FL-01) | `~` | `kubectl exec -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/name=foundry-local -o jsonpath='{.items[0].metadata.name}') -- /bin/bash -c "foundry cache list \| tail -n +3 \| sed 's/Model was not found in catalog//' \| awk '{print \$NF}'" && echo "" && kubectl logs -n foundry-system $(kubectl get pod -n foundry-system -l app.kubernetes.io/component=foundry -o jsonpath='{.items[0].metadata.name}') \| grep -E "(Registry:\|Repository:\|Tag:)" \| grep -v "UserAgent"` |
 | Tab&nbsp;4 | Watch Pods (ROG-FL-01) | `~` | `kubectl get pods -n foundry-system -w` |
