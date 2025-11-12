@@ -68,7 +68,7 @@ kubectl patch kustomization foundry-gitops-apps -n foundry-system -p '{"spec":{"
 
 ### 🖥️ Windows Desktops Setup
 
-> **Required:** Three Windows 11 virtual desktops configured and named for easy switching during demo
+> **Required:** Three Windows 11 desktops configured and named for easy switching during demo
 
 | Desktop | Name | Purpose | Applications |
 |---------|------|---------|--------------|
@@ -78,7 +78,7 @@ kubectl patch kustomization foundry-gitops-apps -n foundry-system -p '{"spec":{"
 
 **Setup Instructions:**
 1. Open Task View (Win + Tab)
-2. Create 3 virtual desktops
+2. Create 3 desktops
 3. Right-click each desktop to rename:
    - Desktop 1 → "PowerPoint"
    - Desktop 2 → "Browser"
@@ -88,7 +88,7 @@ kubectl patch kustomization foundry-gitops-apps -n foundry-system -p '{"spec":{"
 
 > **Note:** When presenting on a stage with a dedicated PowerPoint station, you may only need 2 desktops (Browser and VSC+Terminal) since PowerPoint will be on a separate system.
 
-![Windows Virtual Desktops](img/interface/desktops.png)
+![Windows Desktops](img/interface/desktops.png)
 
 ### 📊 PowerPoint Setup
 
