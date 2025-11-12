@@ -138,7 +138,7 @@ kubectl patch kustomization foundry-gitops-apps -n foundry-system -p '{"spec":{"
 | 13 | 🔧 VS Code Editor | - | Edit helmrelease.yaml | Change tag from v1.0.0 to v2.0.0 |
 | 14 | 🔧 VS Code Terminal 3 + 💻 Windows Terminal Tab 4 | ROG&#8209;FL&#8209;01 | Git commands + Watch | **Side-by-side:** Git push + kubectl watch showing GitOps trigger |
 | 15 | 💻 Windows Terminal Tab 4 | ROG&#8209;FL&#8209;01 | Observe GitOps start | Watch old pod terminating, new pod creating (~30 seconds) |
-| 16 | 💻 Windows Terminal Tab 5 | ROG&#8209;FL&#8209;02 | Switch to FL-02 | **While FL-01 upgrades:** Switch context and check pods |
+| 16 | 💻 Windows Terminal Tab 5 | ROG&#8209;FL&#8209;02 | Switch to ROG&#8209;FL&#8209;02 | **While ROG&#8209;FL&#8209;01 upgrades:** Switch context and check pods |
 | 17 | 💻 Windows Terminal Tab 6 | ROG&#8209;FL&#8209;02 | Check version | Show already has v2.0.0 deployed |
 | 18 | 🌐 Browser Tab 5 | ROG&#8209;FL&#8209;02 | Test Open WebUI | Demonstrate v2.0.0 model at 192.168.8.102:30800 |
 | 19 | 💻 Windows Terminal Tab 7 + 🌐 Browser Tab 5 | ROG&#8209;FL&#8209;02 | GPU monitoring | **Side-by-side:** Open WebUI + nvitop showing GPU usage spike |
