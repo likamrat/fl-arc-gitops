@@ -288,6 +288,63 @@ conn.close()
 '
 ```
 
+### Cluster Shutdown/Startup
+
+**Graceful Shutdown (Recommended):**
+```bash
+# Shutdown ROG-FL-01
+ssh lior@192.168.8.101
+sudo systemctl stop k3s
+sudo shutdown -h now
+
+# Shutdown ROG-FL-02
+ssh lior@192.168.8.102
+sudo systemctl stop k3s
+sudo shutdown -h now
+```
+
+**Quick Shutdown (from local machine):**
+```bash
+# Stop k3s and shutdown ROG-FL-01
+ssh lior@192.168.8.101 "sudo systemctl stop k3s && sudo shutdown -h now"
+
+# Stop k3s and shutdown ROG-FL-02
+ssh lior@192.168.8.102 "sudo systemctl stop k3s && sudo shutdown -h now"
+```
+
+**Graceful Drain Before Shutdown:**
+```bash
+# Drain ROG-FL-01
+kubectx rog-fl-01
+kubectl drain rog-fl-01 --ignore-daemonsets --delete-emptydir-data
+ssh lior@192.168.8.101 "sudo systemctl stop k3s && sudo shutdown -h now"
+
+# Drain ROG-FL-02
+kubectx rog-fl-02
+kubectl drain rog-fl-02 --ignore-daemonsets --delete-emptydir-data
+ssh lior@192.168.8.102 "sudo systemctl stop k3s && sudo shutdown -h now"
+```
+
+**Startup (if k3s doesn't auto-start):**
+```bash
+# Start ROG-FL-01
+ssh lior@192.168.8.101 "sudo systemctl start k3s"
+
+# Start ROG-FL-02
+ssh lior@192.168.8.102 "sudo systemctl start k3s"
+```
+
+**Verify cluster is ready after startup:**
+```bash
+kubectx rog-fl-01
+kubectl get nodes
+kubectl get pods -n foundry-system
+
+kubectx rog-fl-02
+kubectl get nodes
+kubectl get pods -n foundry-system
+```
+
 ---
 
 ## 🔍 Troubleshooting
@@ -560,6 +617,6 @@ If demo goes wrong:
 
 ---
 
-**Last Updated:** November 11, 2025
+**Last Updated:** November 13, 2025
 **Maintained By:** AI Assistant with human collaboration
 **Version:** 1.0.0
