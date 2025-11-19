@@ -49,8 +49,10 @@ spec:
           nvidia.com/gpu: 1
   
   install:
+    timeout: 15m
     remediation:
       retries: 3
   upgrade:
+    timeout: 15m
     remediation:
       retries: 3
