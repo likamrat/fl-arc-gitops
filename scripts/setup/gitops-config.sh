@@ -15,7 +15,7 @@ echo -e "${BLUE}╚════════════════════�
 echo ""
 
 # Configuration
-CLUSTER_NAME="ROG-FL-02"
+CLUSTER_NAME="ROG-FL-01"
 RESOURCE_GROUP="Foundry-Arc"
 CONFIG_NAME="foundry-gitops"
 NAMESPACE="foundry-system"
